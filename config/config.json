@@ -1,0 +1,126 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "key-acheivements-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/keyAcheivements/KeyAcheivementsWebPart.js",
+          "manifest": "./src/webparts/keyAcheivements/KeyAcheivementsWebPart.manifest.json"
+        }
+      ]
+    },
+    "attendance-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/attendance/AttendanceWebPart.js",
+          "manifest": "./src/webparts/attendance/AttendanceWebPart.manifest.json"
+        }
+      ]
+    },
+    "videos-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/videos/VideosWebPart.js",
+          "manifest": "./src/webparts/videos/VideosWebPart.manifest.json"
+        }
+      ]
+    },
+    "employee-suggestions-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/employeeSuggestions/EmployeeSuggestionsWebPart.js",
+          "manifest": "./src/webparts/employeeSuggestions/EmployeeSuggestionsWebPart.manifest.json"
+        }
+      ]
+    },
+    "employees-directory-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/employeesDirectory/EmployeesDirectoryWebPart.js",
+          "manifest": "./src/webparts/employeesDirectory/EmployeesDirectoryWebPart.manifest.json"
+        }
+      ]
+    },
+    "home-page-slider-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/homePageSlider/HomePageSliderWebPart.js",
+          "manifest": "./src/webparts/homePageSlider/HomePageSliderWebPart.manifest.json"
+        }
+      ]
+    },
+    "social-media-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/socialMedia/SocialMediaWebPart.js",
+          "manifest": "./src/webparts/socialMedia/SocialMediaWebPart.manifest.json"
+        }
+      ]
+    },
+    "weather-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/weather/WeatherWebPart.js",
+          "manifest": "./src/webparts/weather/WeatherWebPart.manifest.json"
+        }
+      ]
+    },
+    "push-sms-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/pushSms/PushSmsWebPart.js",
+          "manifest": "./src/webparts/pushSms/PushSmsWebPart.manifest.json"
+        }
+      ]
+    },
+    "job-posting-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/jobPosting/JobPostingWebPart.js",
+          "manifest": "./src/webparts/jobPosting/JobPostingWebPart.manifest.json"
+        }
+      ]
+    },
+    "media-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/media/MediaWebPart.js",
+          "manifest": "./src/webparts/media/MediaWebPart.manifest.json"
+        }
+      ]
+    },
+    "job-post-pag-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/jobPostPag/JobPostPagWebPart.js",
+          "manifest": "./src/webparts/jobPostPag/JobPostPagWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {
+    "jquery": "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js",
+    "jqueryui": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js",
+    "myPagination": {
+      "path": "./src/JS/pagination.js",
+      "globalName": "MyPagination"
+    }
+  },
+  "localizedResources": {
+    "KeyAcheivementsWebPartStrings": "lib/webparts/keyAcheivements/loc/{locale}.js",
+    "AttendanceWebPartStrings": "lib/webparts/attendance/loc/{locale}.js",
+    "VideosWebPartStrings": "lib/webparts/videos/loc/{locale}.js",
+    "EmployeeSuggestionsWebPartStrings": "lib/webparts/employeeSuggestions/loc/{locale}.js",
+    "EmployeesDirectoryWebPartStrings": "lib/webparts/employeesDirectory/loc/{locale}.js",
+    "HomePageSliderWebPartStrings": "lib/webparts/homePageSlider/loc/{locale}.js",
+    "SocialMediaWebPartStrings": "lib/webparts/socialMedia/loc/{locale}.js",
+    "WeatherWebPartStrings": "lib/webparts/weather/loc/{locale}.js",
+    "SmsAdminWebPartStrings": "lib/webparts/smsAdmin/loc/{locale}.js",
+    "PushSmsWebPartStrings": "lib/webparts/pushSms/loc/{locale}.js",
+    "JobPostingWebPartStrings": "lib/webparts/jobPosting/loc/{locale}.js",
+    "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js",
+    "MediaWebPartStrings": "lib/webparts/media/loc/{locale}.js",
+    "JobPostPagWebPartStrings": "lib/webparts/jobPostPag/loc/{locale}.js"
+  }
+}

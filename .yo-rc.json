@@ -1,0 +1,12 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "isCreatingSolution": false,
+    "environment": "spo",
+    "version": "1.11.0",
+    "libraryName": "tec",
+    "libraryId": "fd77c201-9b09-4e6f-9855-2edde883c8cf",
+    "packageManager": "npm",
+    "isDomainIsolated": true,
+    "componentType": "webpart"
+  }
+}
