@@ -7,25 +7,21 @@ import {
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
-import * as strings from 'JobPostPagWebPartStrings';
-import JobPostPag from './components/JobPostPag';
-import { IJobPostPagProps } from './components/IJobPostPagProps';
+import * as strings from 'TrainingCoursesWebPartStrings';
+import TrainingCourses from './components/TrainingCourses';
+import { ITrainingCoursesProps } from './components/ITrainingCoursesProps';
 
-export interface IJobPostPagWebPartProps {
+export interface ITrainingCoursesWebPartProps {
   description: string;
-  siteurl: string;
 }
 
-export default class JobPostPagWebPart extends BaseClientSideWebPart<IJobPostPagWebPartProps> {
+export default class TrainingCoursesWebPart extends BaseClientSideWebPart<ITrainingCoursesWebPartProps> {
 
   public render(): void {
-    const element: React.ReactElement<IJobPostPagProps> = React.createElement(
-      JobPostPag,
+    const element: React.ReactElement<ITrainingCoursesProps> = React.createElement(
+      TrainingCourses,
       {
-        description: this.properties.description,
-        siteurl: this.context.pageContext.site.absoluteUrl,
-        spHttpClient: this.context.spHttpClient,
-        pageSize: 2,
+        description: this.properties.description
       }
     );
 
@@ -36,10 +32,10 @@ export default class JobPostPagWebPart extends BaseClientSideWebPart<IJobPostPag
     ReactDom.unmountComponentAtNode(this.domElement);
   }
 
-  /*protected get dataVersion(): Version {
+  protected get dataVersion(): Version {
     return Version.parse('1.0');
   }
-*/
+
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
     return {
       pages: [

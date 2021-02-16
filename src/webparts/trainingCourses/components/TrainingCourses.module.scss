@@ -1,6 +1,6 @@
 @import '~office-ui-fabric-react/dist/sass/References.scss';
 
-.jobPostPag {
+.trainingCourses {
   .container {
     max-width: 700px;
     margin: 0px auto;
@@ -10,7 +10,7 @@
   .row {
     @include ms-Grid-row;
     @include ms-fontColor-white;
-    background-color: white;
+    background-color: $ms-color-themeDark;
     padding: 20px;
   }
 
@@ -24,12 +24,12 @@
 
   .title {
     @include ms-font-xl;
-    @include ms-fontColor-black;
+    @include ms-fontColor-white;
   }
 
   .subTitle {
     @include ms-font-l;
-    @include ms-fontColor-blue;
+    @include ms-fontColor-white;
   }
 
   .description {

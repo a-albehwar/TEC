@@ -97,6 +97,14 @@
           "manifest": "./src/webparts/jobPostPag/JobPostPagWebPart.manifest.json"
         }
       ]
+    },
+    "training-courses-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/trainingCourses/TrainingCoursesWebPart.js",
+          "manifest": "./src/webparts/trainingCourses/TrainingCoursesWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {
@@ -121,6 +129,7 @@
     "JobPostingWebPartStrings": "lib/webparts/jobPosting/loc/{locale}.js",
     "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js",
     "MediaWebPartStrings": "lib/webparts/media/loc/{locale}.js",
-    "JobPostPagWebPartStrings": "lib/webparts/jobPostPag/loc/{locale}.js"
+    "JobPostPagWebPartStrings": "lib/webparts/jobPostPag/loc/{locale}.js",
+    "TrainingCoursesWebPartStrings": "lib/webparts/trainingCourses/loc/{locale}.js"
   }
 }

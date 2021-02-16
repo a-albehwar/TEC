@@ -13,6 +13,8 @@ import "@pnp/sp/webs";
 import "@pnp/sp/lists/web";    
 import "@pnp/sp/items/list"; 
 
+
+
 import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 
@@ -20,8 +22,8 @@ import { SPComponentLoader } from '@microsoft/sp-loader';
 
 const paginationOptions = {    
         sizePerPage: 2,    
-        hideSizePerPage: true,    
-        hidePageListOnlyOnePage: true    
+        hideSizePerPage: false  
+        //hidePageListOnlyOnePage: true    
 };
 
 const empTablecolumns = [     
@@ -83,7 +85,7 @@ export default class Media extends React.Component<IMediaProps, IMediaStates> {
               <span className={ styles.title }>Welcome to SharePoint!</span>    
               <p className={ styles.subTitle }>List items in react-bootstrap-table-next.</p>    
             </div>    
-          </div>    
+          </div>      
           <BootstrapTable keyField='id' data={this.state.employeeList} columns={ empTablecolumns } headerClasses="header-class"  pagination={paginationFactory(paginationOptions)}/>    
         </div>     
       </div> 
