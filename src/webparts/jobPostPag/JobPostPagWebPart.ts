@@ -26,6 +26,7 @@ export default class JobPostPagWebPart extends BaseClientSideWebPart<IJobPostPag
         siteurl: this.context.pageContext.site.absoluteUrl,
         spHttpClient: this.context.spHttpClient,
         pageSize: 2,
+        weburl:this.context.pageContext.web.absoluteUrl,
       }
     );
 

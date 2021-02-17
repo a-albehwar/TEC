@@ -30,6 +30,9 @@ export interface IJobPostingWebPartProps {
 
 declare var arrLang: any;
 declare var lang: any;
+const url : any = new URL(window.location.href);
+const jobid= url.searchParams.get("jobid");
+
 //guideclare var totalRequests: any;
 
 var pagination_options = {
@@ -46,25 +49,11 @@ export default class JobPostingWebPart extends BaseClientSideWebPart<IJobPosting
   public render(): void {
     this.domElement.innerHTML = `
     <div class="filter-area">
-      <div class="row">        
-        <div class="col-lg-4  mb-2">
-      
-            <label class="form-label" id="lblEmployeeName"> Job Title </label>
-            <input type="text" id='idSearchProject' class="form-input" placeholder="Job Title">
-          
-        </div>
-        <div class="col-lg-4">
-          <button id="idBtnSearch" type="button" class="red-btn red-btn-effect shadow-sm  mt-4"  ><span>search</span></button>
-        </div>
-      </div>
-    </div>
-
-    <div style="width:95%" id="divContainer">
-    <div id="Pagination"></div>
+      <div style="width:95%" id="divContainer">
     </div> 
         
     `;
-    this.setButtonsEventHandlers();
+   // this.setButtonsEventHandlers();
     this.getListData();
   }
 
@@ -90,12 +79,13 @@ export default class JobPostingWebPart extends BaseClientSideWebPart<IJobPosting
     var FullYear=(new Date()).getFullYear();
     var ExpiryDateCon="&$filter=ExpireDate ge datetime'"+FullYear+"-"+Month+"-"+Day+"T00:00:00'";
     var ExpiryDateonly="ExpireDate ge datetime'"+FullYear+"-"+Month+"-"+Day+"T00:00:00'";
-    if (document.getElementById("idSearchProject")["value"] != "") {
+    /*if (document.getElementById("idSearchProject")["value"] != "") {
       jobTitle = document.getElementById("idSearchProject")["value"];
       URL =`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${Listname}')/items?$filter=startswith(Title,%27`+jobTitle+`%27)and(`+ExpiryDateonly+`) `;
     } else {
       URL = `${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${Listname}')/items?$Orderby=ExpireDate%20desc`+ExpiryDateCon;
-    }
+    }*/
+    URL =`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${Listname}')/items?$filter=ID eq `+jobid;
     this.context.spHttpClient
       .get(URL, SPHttpClient.configurations.v1)
       .then((response) => {
@@ -111,10 +101,15 @@ export default class JobPostingWebPart extends BaseClientSideWebPart<IJobPosting
             var formatExpDate=momentObj.format('DD-MM-YYYY');
             html += `   
                    <div style='width:40%;float:left' class="blocks">
-                     <div style='width:100%;float:left;font-weight:bold'>${item.Title}</div>  
-                     <div style='width:45%;float:left'>${formatExpDate}</div>
-                    
+                     <div style='width:100%;float:left;font-weight:bold'><h4>${item.Title}</h4></div> </br>
+                     <h6>Job Description</h6> 
                      <div style='width:100%;float:left;padding-top:10px'>${item.JobDescription}</div>
+                     <h6>Role Description</h6> 
+                     <div>${item.Roles}</div>
+                     <h6>Requirements</h6> 
+                     <div>${item.Requirements}</div>
+                     <h6>Necessary Skills</h6> 
+                     <div>${item.RequiredSkills}</div>
                    </div>
                    <br/> 
                    <br/>               

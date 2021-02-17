@@ -22,16 +22,16 @@ import { SPComponentLoader } from '@microsoft/sp-loader';
 
 const paginationOptions = {    
         sizePerPage: 2,    
-        hideSizePerPage: false  
-        //hidePageListOnlyOnePage: true    
+        hideSizePerPage: true,
+        hidePageListOnlyOnePage: true    
 };
 
 const empTablecolumns = [     
   {    
       dataField: "Title",    
       text: "Media Title",    
-      headerStyle : {backgroundColor: '#81c784'},    
-      sort : true
+      headerStyle : {backgroundColor: '#81c784'} 
+      //sort : true
       
   },    
   {    
@@ -82,8 +82,7 @@ export default class Media extends React.Component<IMediaProps, IMediaStates> {
         <div className={ styles.container }>    
           <div className={ styles.row }>    
             <div className={ styles.column }>    
-              <span className={ styles.title }>Welcome to SharePoint!</span>    
-              <p className={ styles.subTitle }>List items in react-bootstrap-table-next.</p>    
+              <span className={ styles.title }>TEC Media</span>       
             </div>    
           </div>      
           <BootstrapTable keyField='id' data={this.state.employeeList} columns={ empTablecolumns } headerClasses="header-class"  pagination={paginationFactory(paginationOptions)}/>    

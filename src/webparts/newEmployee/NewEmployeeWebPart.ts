@@ -7,21 +7,38 @@ import {
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
-import * as strings from 'MediaWebPartStrings';
-import Media from './components/Media';
-import { IMediaProps } from './components/IMediaProps';
+import * as strings from 'NewEmployeeWebPartStrings';
+import NewEmployee from './components/NewEmployee';
+import { INewEmployeeProps } from './components/INewEmployeeProps';
 
-export interface IMediaWebPartProps {
+export interface INewEmployeeWebPartProps {
   description: string;
+  siteurl: string;
+ 
 }
 
-export default class MediaWebPart extends BaseClientSideWebPart<IMediaWebPartProps> {
+export default class NewEmployeeWebPart extends BaseClientSideWebPart<INewEmployeeWebPartProps> {
 
-  public render(): void {
-    const element: React.ReactElement<IMediaProps> = React.createElement(
-      Media,
+  /*public render(): void {
+    const element: React.ReactElement<INewEmployeeProps> = React.createElement(
+      NewEmployee,
       {
-        description: this.properties.description
+        description: this.properties.description,
+      }
+    );
+
+    ReactDom.render(element, this.domElement);
+  }
+  */
+  public render(): void {
+    const element: React.ReactElement<INewEmployeeProps> = React.createElement(
+      NewEmployee,
+      {
+        description: this.properties.description,
+        siteurl: this.context.pageContext.site.absoluteUrl,
+        spHttpClient: this.context.spHttpClient,
+        pageSize: 2,
+        weburl:this.context.pageContext.web.absoluteUrl,
       }
     );
 
@@ -32,7 +49,7 @@ export default class MediaWebPart extends BaseClientSideWebPart<IMediaWebPartPro
     ReactDom.unmountComponentAtNode(this.domElement);
   }
 
- /*protected get dataVersion(): Version {
+ /* protected get dataVersion(): Version {
     return Version.parse('1.0');
   }
   */

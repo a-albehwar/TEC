@@ -1,8 +1,9 @@
 import * as React from 'react';
-import styles from './JobPostPag.module.scss';
-import { IJobPostPagProps } from './IJobPostPagProps';
+import styles from './NewEmployee.module.scss';
+import { INewEmployeeProps } from './INewEmployeeProps';
 import { escape } from '@microsoft/sp-lodash-subset';
 import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http";
+
 
 import { sp } from "@pnp/sp";  
 import * as moment from 'moment';
@@ -12,20 +13,20 @@ import { Pagination } from "@pnp/spfx-controls-react/lib/pagination";
 
 import * as jquery from 'jquery';
 import { Item, Items } from '@pnp/sp/items';
- 
 
-
-export interface IJobPostPagState{    
-        items?: any[];
-        currentPage?: number;
-        activePage?:number;
-        itemCount?: number;
-        status?: string;
-        pageSize:number;
-        totalcounts:number;
+export interface INewEmployeeState{    
+  items?: any[];
+  currentPage?: number;
+  activePage?:number;
+  itemCount?: number;
+  status?: string;
+  pageSize:number;
+  totalcounts:number;
 } 
 
-export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPostPagState> {
+
+
+export default class NewEmployee extends React.Component<INewEmployeeProps, INewEmployeeState> {
   private _getPage(page: number){
     //console.log('Page:', page);
     this.setState({
@@ -34,20 +35,19 @@ export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPos
     });
     this._onPageUpdate(page);
   }
- public constructor(props: IJobPostPagProps,state: IJobPostPagState){    
+  public constructor(props: INewEmployeeProps,state: INewEmployeeState){    
     super(props);    
     this.state ={    
       items:[],
       currentPage:1,
       pageSize:2,
       totalcounts:2
-    };  
-    //this._onPageUpdate = this._onPageUpdate.bind(this);
-    this.getListItemsCount(`${this.props.siteurl}/_api/web/lists/GetByTitle('JobPosting')/ItemCount`);
+    };
+    this.getListItemsCount(`${this.props.siteurl}/_api/web/lists/GetByTitle('NewEmployees')/ItemCount`);
     const queryParam = this.buildQueryParams(props);
    
-    this.readItems(`${this.props.siteurl}/_api/web/lists/GetByTitle('JobPosting')/items${queryParam}`);
-  } 
+    this.readItems(`${this.props.siteurl}/_api/web/lists/GetByTitle('NewEmployees')/items${queryParam}`);
+  }
 
   private _onPageUpdate(pageNumber: number) {
     //this.readItems()
@@ -57,86 +57,47 @@ export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPos
     const p_ID = (pageNumber - 1)*this.props.pageSize;
     
    //?$select=ID,WorkType,ApplyLink,ExpireDate,Title,LK_Departments/ID,LK_Departments/Title&$expand=LK_Departments
-    const queryParam = `%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$select=ID,WorkType,ApplyLink,ExpireDate,Title,Department/ID,Department/Title&$expand=Department&$top=${this.props.pageSize}`;
-    var url = `${this.props.siteurl}/_api/web/lists/GetByTitle('JobPosting')/items?`+ queryParam;
+    const queryParam = `%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$select=ID,Title,Phone,EmpImage,Mail,AboutEmp,Created&$top=${this.state.pageSize}`;
+    var url = `${this.props.siteurl}/_api/web/lists/GetByTitle('NewEmployees')/items?`+ queryParam;
     this.readItems(url);    
   }
 
-  public componentWillReceiveProps(nextProps: IJobPostPagProps): void{   
+  public componentWillReceiveProps(nextProps: INewEmployeeProps): void{   
     
     this.setState({
 
       pageSize: nextProps.pageSize
     });
-    this.getListItemsCount(`${this.props.siteurl}/_api/web/lists/GetByTitle('JobPosting')/ItemCount`);
+    this.getListItemsCount(`${this.props.siteurl}/_api/web/lists/GetByTitle('NewEmployees')/ItemCount`);
       //const selectColumns = nextProps.selectedColumns === null || nextProps.selectedColumns===undefined || nextProps.selectedColumns.length === 0? "" : '?$select='+nextProps.selectedColumns.join();
     const queryParam = this.buildQueryParams(nextProps);
-    this.readItems(`${this.props.siteurl}/_api/web/lists/GetByTitle('JobPosting')/items${queryParam}`);
+    this.readItems(`${this.props.siteurl}/_api/web/lists/GetByTitle('NewEmployees')/items${queryParam}`);
+
+    //https://tecq8.sharepoint.com/sites/IntranetDev/_api/web/lists/GetByTitle('NewEmployees')/items?%24skiptoken=Paged%3dTRUE%26p_ID=0&$top=2&$select=ID,Title,,Phone,EmpImage,Mail,AboutEmp,Created
   }
 
-  //getListItemsCount(`${this.props.siteUrl}/_api/web/lists/GetByTitle('JobPosting')/ItemCount`);
-  
- 
-  /*public getJobDetails = () =>{    
-    sp.site.rootWeb.lists.getByTitle("JobPosting").items.getAll().    
-    then((results : any[])=>{    
-        console.log(results.length);
-        this.setState({    
-          employeeList:results    
-        });    
-      
-    });    
-  } 
-  */
 
- /* public componentDidMount(){    
-   // this.getJobDetails();    
-   var reactHandler = this;    
-   jquery.ajax({    
-        url: `${this.props.siteurl}/_api/web/lists/getbytitle('JobPosting')/items`,    
-        type: "GET",    
-        headers:{'Accept': 'application/json; odata=verbose;'},    
-        success: function(resultData) {             
-          reactHandler.setState({    
-            items: resultData.d.results 
-          });    
-        },    
-        error : function(jqXHR, textStatus, errorThrown) { 
-          console.log('Error Occurred !');    
-        }    
-    });    
-  }  
-*/
-
-
-  public render(): React.ReactElement<IJobPostPagProps> {
+  public render(): React.ReactElement<INewEmployeeProps> {
     var weburl=this.props.weburl;
-    
+   
     return (
       
       <div>
         <div >
-          <div><h1>We are Hiring</h1></div>
-          <div><h4>Current opportunities</h4></div>
+          <div><h1>New Employees</h1></div>
           <div >
             <div>
             {this.state.items.map(function(item,key){ 
-              var momentObj = moment(item.ExpireDate);
-              var formatExpDate=momentObj.format('DD-MM-YYYY');
-             
-              var joburl=weburl+"/Pages/TecPages/Jobs/JobDetails.aspx?jobid="+item.ID;
-              //console.log(joburl);
-              return (<div key={key} className={styles.row}> 
-                <div ><a href={joburl}>
-                          <u><span className={ styles.label }>{item.Title}</span></u>
-                      </a>
-                </div> 
-                <div>Work Type - {item.WorkType}</div> 
-                <div>Department - {item.Department.Title}</div> 
-                <div>End Date - {formatExpDate}</div> 
-                <div><a href={item.ApplyLink.Url}>
-                          <span className={ styles.label }>Apply</span>
-                      </a>
+              //var imageurl={item.EmpImage.Url};
+              return (<div key={key} className={styles.row} > 
+               
+                <div>Touristic Enterprises Co. welcomes - {item.Title}</div> 
+                <div dangerouslySetInnerHTML={{__html: item.AboutEmp}} />;
+                <div>Welcome to the {item.Title}</div> 
+                <div>
+                  <div> {item.Title}</div>
+                  <div> {item.Phone}</div>
+                  <div> {item.Mail}</div>
                 </div>
               </div>
               ); 
@@ -160,6 +121,26 @@ export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPos
       </div>
     );
   }
+
+  /*public render(): React.ReactElement<INewEmployeeProps> {
+    return (
+      <div className={ styles.newEmployee }>
+        <div className={ styles.container }>
+          <div className={ styles.row }>
+            <div className={ styles.column }>
+              <span className={ styles.title }>Welcome to SharePoint!</span>
+              <p className={ styles.subTitle }>Customize SharePoint experiences using Web Parts.</p>
+              <p className={ styles.description }>{escape(this.props.description)}</p>
+              <a href="https://aka.ms/spfx" className={ styles.button }>
+                <span className={ styles.label }>Learn more</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+    
+  }*/
   private getListItemsCount(url: string) {
     this.props.spHttpClient.get(url,SPHttpClient.configurations.v1,
     {
@@ -176,10 +157,9 @@ export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPos
       });
     });
   }
-
-  private buildQueryParams(props: IJobPostPagProps): string{
+  private buildQueryParams(props: INewEmployeeProps): string{
     const p_ID = (this.state.currentPage - 1)*this.state.pageSize;
-    const queryParam = `?%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$select=ID,WorkType,ApplyLink,ExpireDate,Title,Department/ID,Department/Title&$expand=Department&$top=${this.state.pageSize}`;
+    const queryParam = `?%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$select=ID,Title,Phone,EmpImage,Mail,AboutEmp,Created&$top=${this.state.pageSize}`;
     
     return queryParam;
   }
