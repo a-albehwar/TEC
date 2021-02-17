@@ -35,7 +35,7 @@ export default class JobPostPag extends React.Component<IJobPostPagProps, {}> {
             limiter={3} // Optional - default value 3
             hideFirstPageJump // Optional
             hideLastPageJump // Optional
-            limiterIcon={"Emoji12"} // Optional GIT
+            limiterIcon={"Emoji12"} // Optional GIT git 2
             />
             </div>
 
