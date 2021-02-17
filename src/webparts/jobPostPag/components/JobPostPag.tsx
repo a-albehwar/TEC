@@ -38,6 +38,8 @@ export default class JobPostPag extends React.Component<IJobPostPagProps, {}> {
             limiterIcon={"Emoji12"} // Optional
             />
             </div>
+
+            
           </div>
         </div>
       </div>
