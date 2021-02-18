@@ -115,10 +115,10 @@ export default class EmployeesDirectoryWebPart extends BaseClientSideWebPart<IEm
        <button id="idBtnSearch" type="button" class="red-btn red-btn-effect shadow-sm  mt-4"  > <span>search</span></button>
          </div>
      </div>
-</div>
+  </div>
 
 
-<div class="filter-result">
+  <div class="filter-result">
         <div class="row" id="tblRegistrationDetails">       
 
         </div>

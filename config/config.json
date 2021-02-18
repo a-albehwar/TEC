@@ -113,6 +113,14 @@
           "manifest": "./src/webparts/newEmployee/NewEmployeeWebPart.manifest.json"
         }
       ]
+    },
+    "media-details-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/mediaDetails/MediaDetailsWebPart.js",
+          "manifest": "./src/webparts/mediaDetails/MediaDetailsWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {
@@ -139,6 +147,7 @@
     "MediaWebPartStrings": "lib/webparts/media/loc/{locale}.js",
     "JobPostPagWebPartStrings": "lib/webparts/jobPostPag/loc/{locale}.js",
     "TrainingCoursesWebPartStrings": "lib/webparts/trainingCourses/loc/{locale}.js",
-    "NewEmployeeWebPartStrings": "lib/webparts/newEmployee/loc/{locale}.js"
+    "NewEmployeeWebPartStrings": "lib/webparts/newEmployee/loc/{locale}.js",
+    "MediaDetailsWebPartStrings": "lib/webparts/mediaDetails/loc/{locale}.js"
   }
 }

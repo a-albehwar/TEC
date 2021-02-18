@@ -150,13 +150,9 @@ export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPos
             totalPages={2} 
             onChange={(page) => this._getPage(page)}
             limiter={3} // Optional - default value 3
-<<<<<<< HEAD
             hideFirstPageJump={false} // Optional
             hideLastPageJump={false} // Optional
             limiterIcon={"Emoji12"} // Optional
-=======
-             // Optional GIT git 2 git 3 git 4 test
->>>>>>> master
             />
             </div>
 
