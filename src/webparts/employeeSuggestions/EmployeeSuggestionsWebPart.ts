@@ -20,7 +20,7 @@ export interface IEmployeeSuggestionsWebPartProps {
   description: string;
 }
 declare var arrLang: any;
-
+declare var lang: any;
 // export interface ISPList {
 //   Title: string;
 //   Suggestion: string;
@@ -57,13 +57,13 @@ export default class EmployeeSuggestionsWebPart extends BaseClientSideWebPart<IE
   }
  
   private Localization(): void {
-    var lcid=this.context.pageContext.legacyPageContext['currentCultureLCID'];  
-    var language=lcid==1025?"ar":"en";
-    $('#btnSubmit').text(arrLang[language]['EmployeeSuggestions']['Submit']);
-    $('#idTitle').attr("placeholder", arrLang[language]['EmployeeSuggestions']['Title']);
-    $('#idSuggestion').attr("placeholder", arrLang[language]['EmployeeSuggestions']['Suggestion']);
-    $('#lblTitle').text(arrLang[language]['EmployeeSuggestions']['lblTitle']);
-	  $('#lblSuggestion').text(arrLang[language]['EmployeeSuggestions']['Suggestion']);
+    //var lcid=this.context.pageContext.legacyPageContext['currentCultureLCID'];  
+    //var language=lcid==1025?"ar":"en";
+    $('#btnSubmit').text(arrLang[lang]['EmployeeSuggestions']['Submit']);
+    $('#idTitle').attr("placeholder", arrLang[lang]['EmployeeSuggestions']['Title']);
+    $('#idSuggestion').attr("placeholder", arrLang[lang]['EmployeeSuggestions']['Suggestion']);
+    $('#lblTitle').text(arrLang[lang]['EmployeeSuggestions']['lblTitle']);
+	  $('#lblSuggestion').text(arrLang[lang]['EmployeeSuggestions']['Suggestion']);
   }
   private setButtonsEventHandlers(): void {
     const webPart: EmployeeSuggestionsWebPart = this;

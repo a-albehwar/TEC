@@ -21,7 +21,8 @@ export default class MediaWebPart extends BaseClientSideWebPart<IMediaWebPartPro
     const element: React.ReactElement<IMediaProps> = React.createElement(
       Media,
       {
-        description: this.properties.description
+        description: this.properties.description,
+        weburl:this.context.pageContext.web.absoluteUrl,
       }
     );
 

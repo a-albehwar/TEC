@@ -135,12 +135,12 @@ export default class EmployeesDirectoryWebPart extends BaseClientSideWebPart<IEm
   //   return Version.parse('1.0');
   // }
   private Localization(): void {
-    var lcid=this.context.pageContext.legacyPageContext['currentCultureLCID'];  
-    var language=lcid==1025?"ar":"en";
-    $('#idBtnSearch').text(arrLang[language]['EmployeeDirectory']['Search']);
-    $('#idSearchName').attr("placeholder", arrLang[language]['EmployeeDirectory']['EmployeeeName']);
-    $('#lblDepartment').text(arrLang[language]['EmployeeDirectory']['Department']);
-	  $('#lblEmployeeName').text(arrLang[language]['EmployeeDirectory']['EmployeeeName']);
+    // var lcid=this.context.pageContext.legacyPageContext['currentCultureLCID'];  
+    // var language=lcid==1025?"ar":"en";
+    $('#idBtnSearch').text(arrLang[lang]['EmployeeDirectory']['Search']);
+    $('#idSearchName').attr("placeholder", arrLang[lang]['EmployeeDirectory']['EmployeeeName']);
+    $('#lblDepartment').text(arrLang[lang]['EmployeeDirectory']['Department']);
+	  $('#lblEmployeeName').text(arrLang[lang]['EmployeeDirectory']['EmployeeeName']);
   }
   private setButtonsEventHandlers(): void {
     debugger;

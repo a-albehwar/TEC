@@ -2,10 +2,8 @@ import * as React from 'react';
 import styles from './Media.module.scss';
 import { IMediaProps } from './IMediaProps';
 import { escape } from '@microsoft/sp-lodash-subset';
-
-
-//Import related to react-bootstrap-table-next    
-import BootstrapTable from 'react-bootstrap-table-next'; 
+import { Pagination } from "@pnp/spfx-controls-react/lib/pagination";
+import * as moment from 'moment';
    
 //Import from @pnp/sp    
 import { sp } from "@pnp/sp";    
@@ -25,7 +23,7 @@ const paginationOptions = {
         hideSizePerPage: true,
         hidePageListOnlyOnePage: true    
 };
-
+/*
 const empTablecolumns = [     
   {    
       dataField: "Title",    
@@ -44,7 +42,7 @@ const empTablecolumns = [
   }
 
 ];  
-
+*/
   
   export interface IMediaStates{    
     employeeList :any[]   
@@ -52,7 +50,14 @@ const empTablecolumns = [
    
 
 export default class Media extends React.Component<IMediaProps, IMediaStates> {
-
+  private _getPage(page: number){
+    //console.log('Page:', page);
+    this.setState({
+      //currentPage: page,
+      //totalcounts:Math.round(this.state.itemCount%this.state.pageSize)
+    });
+    //this._onPageUpdate(page);
+  }
   constructor(props: IMediaProps){    
     super(props);    
     this.state ={    
@@ -74,20 +79,55 @@ export default class Media extends React.Component<IMediaProps, IMediaStates> {
     this.getEmployeeDetails();    
   }  
 
+  public OpenMediaDetails() {
+    alert("Hi");
+    window.location.href = "http://google.com";
+  };
+  
   public render(): React.ReactElement<IMediaProps> {
-    let cssURL = "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css";    
-    SPComponentLoader.loadCss(cssURL); 
+    var weburl=this.props.weburl;
+    
     return (
-      <div className={ styles.media }>    
-        <div className={ styles.container }>    
-          <div className={ styles.row }>    
-            <div className={ styles.column }>    
-              <span className={ styles.title }>TEC Media</span>       
-            </div>    
-          </div>      
-          <BootstrapTable keyField='id' data={this.state.employeeList} columns={ empTablecolumns } headerClasses="header-class"  pagination={paginationFactory(paginationOptions)}/>    
-        </div>     
-      </div> 
+      
+      <section className={"innerpagecont"}>
+        <div className={"Inner-page-title mb-4"}>
+                <h2 className={"page-heading"}> Media </h2>
+        </div>
+        <div className={"container-fluid"}>
+        {this.state.employeeList.map(function(item,key){ 
+          var momentObj = moment(item.PublishedDate);
+          var formatExpDate=momentObj.format('DD-MM-YYYY');
+          var Descstr = item.Description;
+          var splitDesc = Descstr.substring(0, 200);
+          var mediaurl=weburl+"/Pages/TecPages/Jobs/MediaDetails.aspx?mediaid="+item.ID;
+           return (
+            <div className={"row gray-box"} >
+                <div className={"col-md-12"}>
+                    <h4>{item.Title}</h4>
+                    <p className={"detaildate"}>{formatExpDate} | <span className="detailsource">{item.PublishedSource}</span></p>
+                    <p className={"mt-2"} id={"mediaDesc"+item.ID}><div dangerouslySetInnerHTML={{__html: splitDesc}} /></p>
+                    <button className={"red-btn-effect shadow-sm popup-btn ml-auto float-right"} id={item.ID} onClick={e => this.OpenMediaDetails(this)}><a href={mediaurl}><span>Read More...</span></a></button>
+                </div>
+            </div>
+            ); 
+          })} 
+          <div className={"pager pagination"}>
+          <Pagination
+            //totalItems={ this.state.itemCount }
+            //itemsCountPerPage={ this.state.pageSize } 
+            //onPageUpdate={ this._onPageUpdate } 
+            currentPage={1}
+
+            totalPages={2} 
+            onChange={(page) => this._getPage(page)}
+            limiter={3} // Optional - default value 3
+            hideFirstPageJump={false} // Optional
+            hideLastPageJump={false} // Optional
+            limiterIcon={"Emoji12"} // Optional
+            />
+         </div>
+        </div>
+      </section>
       
     );
   }
