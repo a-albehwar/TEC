@@ -57,8 +57,8 @@ export default class EmployeeSuggestionsWebPart extends BaseClientSideWebPart<IE
   }
  
   private Localization(): void {
-    //var lcid=this.context.pageContext.legacyPageContext['currentCultureLCID'];  
-    //var language=lcid==1025?"ar":"en";
+    var lcid=this.context.pageContext.legacyPageContext['currentCultureLCID'];  
+    var language=lcid==13313?"ar":"en";
     $('#btnSubmit').text(arrLang[lang]['EmployeeSuggestions']['Submit']);
     $('#idTitle').attr("placeholder", arrLang[lang]['EmployeeSuggestions']['Title']);
     $('#idSuggestion').attr("placeholder", arrLang[lang]['EmployeeSuggestions']['Suggestion']);
