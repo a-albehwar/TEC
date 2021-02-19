@@ -24,6 +24,9 @@ export default class MediaWebPart extends BaseClientSideWebPart<IMediaWebPartPro
         description: this.properties.description,
         weburl:this.context.pageContext.web.absoluteUrl,
         pagecultureId:this.context.pageContext.cultureInfo.currentUICultureName,
+        spHttpClient: this.context.spHttpClient,
+        siteurl: this.context.pageContext.site.absoluteUrl,
+        pageSize:2,
       }
     );
 
