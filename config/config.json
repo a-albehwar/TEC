@@ -121,6 +121,14 @@
           "manifest": "./src/webparts/mediaDetails/MediaDetailsWebPart.manifest.json"
         }
       ]
+    },
+    "twitter-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/twitter/TwitterWebPart.js",
+          "manifest": "./src/webparts/twitter/TwitterWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {
@@ -148,6 +156,7 @@
     "JobPostPagWebPartStrings": "lib/webparts/jobPostPag/loc/{locale}.js",
     "TrainingCoursesWebPartStrings": "lib/webparts/trainingCourses/loc/{locale}.js",
     "NewEmployeeWebPartStrings": "lib/webparts/newEmployee/loc/{locale}.js",
-    "MediaDetailsWebPartStrings": "lib/webparts/mediaDetails/loc/{locale}.js"
+    "MediaDetailsWebPartStrings": "lib/webparts/mediaDetails/loc/{locale}.js",
+    "TwitterWebPartStrings": "lib/webparts/twitter/loc/{locale}.js"
   }
 }
