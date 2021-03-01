@@ -13,7 +13,8 @@ import { Pagination } from "@pnp/spfx-controls-react/lib/pagination";
 import * as jquery from 'jquery';
 import { Item, Items } from '@pnp/sp/items';
  
-
+declare var arrLang: any;
+declare var lang: any;
 
 export interface IJobPostPagState{    
         items?: any[];
@@ -23,6 +24,7 @@ export interface IJobPostPagState{
         status?: string;
         pageSize:number;
         totalcounts:number;
+        totalPages:number;
 } 
 
 export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPostPagState> {
@@ -40,7 +42,8 @@ export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPos
       items:[],
       currentPage:1,
       pageSize:2,
-      totalcounts:2
+      totalcounts:2,
+      totalPages:0,
     };  
     //this._onPageUpdate = this._onPageUpdate.bind(this);
     this.getListItemsCount(`${this.props.siteurl}/_api/web/lists/GetByTitle('JobPosting')/ItemCount`);
@@ -57,7 +60,7 @@ export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPos
     const p_ID = (pageNumber - 1)*this.props.pageSize;
     
    //?$select=ID,WorkType,ApplyLink,ExpireDate,Title,LK_Departments/ID,LK_Departments/Title&$expand=LK_Departments
-    const queryParam = `%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$select=ID,WorkType,ApplyLink,ExpireDate,Title,Department/ID,Department/Title&$expand=Department&$top=${this.props.pageSize}`;
+    const queryParam = `%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$select=Title_Ar,Location_Ar,WorkType_Ar,ID,WorkType,Location,ApplyLink,ExpireDate,Title,Department/ID,Department/Title&$expand=Department&$top=${this.props.pageSize}`;
     var url = `${this.props.siteurl}/_api/web/lists/GetByTitle('JobPosting')/items?`+ queryParam;
     this.readItems(url);    
   }
@@ -74,71 +77,60 @@ export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPos
     this.readItems(`${this.props.siteurl}/_api/web/lists/GetByTitle('JobPosting')/items${queryParam}`);
   }
 
-  //getListItemsCount(`${this.props.siteUrl}/_api/web/lists/GetByTitle('JobPosting')/ItemCount`);
-  
- 
-  /*public getJobDetails = () =>{    
-    sp.site.rootWeb.lists.getByTitle("JobPosting").items.getAll().    
-    then((results : any[])=>{    
-        console.log(results.length);
-        this.setState({    
-          employeeList:results    
-        });    
-      
-    });    
-  } 
-  */
-
- /* public componentDidMount(){    
-   // this.getJobDetails();    
-   var reactHandler = this;    
-   jquery.ajax({    
-        url: `${this.props.siteurl}/_api/web/lists/getbytitle('JobPosting')/items`,    
-        type: "GET",    
-        headers:{'Accept': 'application/json; odata=verbose;'},    
-        success: function(resultData) {             
-          reactHandler.setState({    
-            items: resultData.d.results 
-          });    
-        },    
-        error : function(jqXHR, textStatus, errorThrown) { 
-          console.log('Error Occurred !');    
-        }    
-    });    
-  }  
-*/
-
-
   public render(): React.ReactElement<IJobPostPagProps> {
     var weburl=this.props.weburl;
+    var siteurl=this.props.siteurl;
+    var langcode=this.props.pagecultureId;
+    lang=langcode=="en-US"?"en":"ar";
     
     return (
       
-      <div>
-        <div >
-          <div><h1>We are Hiring</h1></div>
-          <div><h4>Current opportunities</h4></div>
-          <div >
-            <div>
+      <section className="inner-page-cont">
+           
+         <div className="Inner-page-title">
+            <h2 className="page-heading">Gird Page</h2>
+            
+         </div>
+
+         <div className="col-md-8 mx-auto col-12 jobpost">
+            <div className="row">
+              <div className="col-12 my-4">
+               <h2 id="h2_curOpp">{arrLang[lang]['Jobs']['CurrOppur']}</h2>
+			        </div>
+              <div id="job_item_row">
             {this.state.items.map(function(item,key){ 
               var momentObj = moment(item.ExpireDate);
               var formatExpDate=momentObj.format('DD-MM-YYYY');
-             
               var joburl=weburl+"/Pages/TecPages/Jobs/JobDetails.aspx?jobid="+item.ID;
-              //console.log(joburl);
-              return (<div key={key} className={styles.row}> 
-                <div ><a href={joburl}>
-                          <u><span className={ styles.label }>{item.Title}</span></u>
-                      </a>
-                </div> 
-                <div>Work Type - {item.WorkType}</div> 
-                <div>Department - {item.Department.Title}</div> 
-                <div>End Date - {formatExpDate}</div> 
-                <div><a href={item.ApplyLink.Url}>
-                          <span className={ styles.label }>Apply</span>
-                      </a>
-                </div>
-              </div>
+              var imgurl=siteurl+"/Style%20Library/TEC/images/man.svg";
+              var applnk=item.ApplyLink.Url;
+
+              var jobtitle=langcode=="en-US"?item.Title:item.Title_Ar;
+              var worktype=langcode=="en-US"?item.WorkType:item.WorkType_Ar;
+              var loc=langcode=="en-US"?item.Location:item.Location_Ar;
+              return (
+                <div className="job-item ">
+                    <div>
+                      
+                    </div>
+                    <div className="company-logo">
+                        <img src={imgurl} alt="logo"></img>
+                    </div>
+                    <div className="media-body align-self-center">
+                      <h4><a href={joburl}>{jobtitle}</a></h4>
+                      <div className="job-ad-item">
+                        <ul>
+                            <li><i className="fas fa-map-marker-alt"></i>{loc}</li>
+                            <li><i className="far fa-clock"></i>{worktype}</li>
+                            <li><i className="fas fa-briefcase"></i>  {item.Department.Title}</li>
+                            <li><i className="fas fa-hourglass-end"></i> {arrLang[lang]['Jobs']['EndDate']}: {formatExpDate}</li>
+                        </ul>
+                      </div>
+                      <div className="div-right">
+                        <a href={applnk} className="apply-button">{arrLang[lang]['Jobs']['ApplyNow']}</a>
+                      </div>
+                    </div>
+                  </div>
               ); 
             })} 
             <Pagination
@@ -147,7 +139,7 @@ export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPos
             //onPageUpdate={ this._onPageUpdate } 
             currentPage={ this.state.currentPage }
 
-            totalPages={2} 
+            totalPages={this.state.totalPages}  
             onChange={(page) => this._getPage(page)}
             limiter={3} // Optional - default value 3
             hideFirstPageJump={false} // Optional
@@ -155,11 +147,10 @@ export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPos
             limiterIcon={"Emoji12"} // Optional
             />
             </div>
-
-
-          </div>
-        </div>
-      </div>
+            </div>
+         </div>
+          
+         </section>
     );
   }
   private getListItemsCount(url: string) {
@@ -173,15 +164,15 @@ export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPos
       return response.json();
     }).then((response: {value: number}): void => {
       this.setState({
-        itemCount: response.value
-        
+        itemCount: response.value,
+        totalPages: Math.ceil(response.value/this.state.pageSize)
       });
     });
   }
 
   private buildQueryParams(props: IJobPostPagProps): string{
     const p_ID = (this.state.currentPage - 1)*this.state.pageSize;
-    const queryParam = `?%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$select=ID,WorkType,ApplyLink,ExpireDate,Title,Department/ID,Department/Title&$expand=Department&$top=${this.state.pageSize}`;
+    const queryParam = `?%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$select=Title_Ar,Location_Ar,WorkType_Ar,ID,WorkType,Location,ApplyLink,ExpireDate,Title,Department/ID,Department/Title&$expand=Department&$top=${this.state.pageSize}`;
     
     return queryParam;
   }

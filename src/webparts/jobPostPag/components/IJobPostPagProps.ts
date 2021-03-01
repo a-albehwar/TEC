@@ -8,4 +8,5 @@ export interface IJobPostPagProps {
   spHttpClient: SPHttpClient;
   pageSize: number;
   weburl:string;
+  pagecultureId:string;
 }

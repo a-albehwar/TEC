@@ -8,7 +8,7 @@ import { escape } from '@microsoft/sp-lodash-subset';
 
 import styles from './PushSmsWebPart.module.scss';
 import * as strings from 'PushSmsWebPartStrings';
-
+import * as $ from 'jquery';
 //import { SPHttpClient, SPHttpClientResponse,HttpClientResponse,HttpClient,IHttpClientOptions } from '@microsoft/sp-http';
 
 import { SPHttpClient, SPHttpClientResponse,IHttpClientOptions } from "@microsoft/sp-http";
@@ -23,25 +23,41 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
 
   private Listname: string = "EmployeeSuggestions";
   private listItemId: number = 0;
-  
+  private language:string;
   
   public render(): void {
     this.domElement.innerHTML = `
     <br/>
+    <div class="col-lg-4 mb-2">
+      <label id="lbl_Language" class="form-label"></label><br/>
+      <input type="radio" id="rb_arabic" name="language" value="A">
+      <label for="arabic" id="lbl_rb_Arabic"></label><br>
+      <input type="radio" id="rb_english" name="language" value="L">
+      <label for="english"  id="lbl_rb_English"></label><br>
+      <label id="lbl_Langerr" class="form-label" style="color:red"></label>
+    </div>
     <div class="col-lg-4  mb-2">    
       <label id="lblTitle" class="form-label">Mobile Number </label>
-      <input type="text" id="idTitle" class="form-input" name="Title" placeholder="Enter Mobile Number">
+      <input type="text" id="idTitle" class="form-input" name="Title"><br>
+      <i id="italic_Multimob"></i>
+      <label id="lbl_MobNumerr" class="form-label" style="color:red"></label>
+    </div> 
+    <div class="col-lg-4  mb-2">    
+      <label id="lblSubject" class="form-label"></label>
+      <input type="text" id="idSubject" class="form-input" name="Subject"><br>
+      <label id="lbl_subjecterr" class="form-label" style="color:red"></label>
     </div>   
     <div class="col-lg-4  mb-2">    
       <label id="lblSuggestion" class="form-label"> Message </label>
-      <textarea style="height:auto !important" rows="5" cols="5" id="idSuggestion" class="form-input" name="Suggesstion" 
-      placeholder="Type Message here" onChange={_validateDescription}></textarea>
+      <textarea style="height:auto !important" rows="5" cols="5" id="idSuggestion" class="form-input" name="Suggesstion"> 
+      </textarea><br>
+      <label id="lbl_Msgerr" class="form-label" style="color:red"></label>
     </div>  
     <div class="col-lg-4">
-      <button class="red-btn red-btn-effect shadow-sm  mt-4" id="btnSubmit"> <span>Submit</span></button>
+      <button class="red-btn red-btn-effect shadow-sm  mt-4" id="btnSubmit"></button>
     </div>
-    <br/>
-    <!--<div id="tblRegistrationDetails"></div>-->  
+    <br>
+    <label id="lblDisplayMsg" class="form-label"></label> 
     `;
     this.Localization();
     this.setButtonsEventHandlers();
@@ -50,35 +66,58 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
   private clear(): void {
     document.getElementById('idTitle')["value"] = "";
     document.getElementById('idSuggestion')["value"] = "";
+    document.getElementById('idSubject')["value"] = "";
   }
 
   private Localization(): void {
     var lcid=this.context.pageContext.legacyPageContext['currentCultureLCID'];  
-    var language=lcid==13313?"ar":"en";
-    /*$('#btnSubmit').text(arrLang[language]['EmployeeSuggestions']['Submit']);
-    $('#idTitle').attr("placeholder", arrLang[language]['EmployeeSuggestions']['Title']);
-    $('#idSuggestion').attr("placeholder", arrLang[language]['EmployeeSuggestions']['Suggestion']);
-    $('#lblTitle').text(arrLang[language]['EmployeeSuggestions']['lblTitle']);
-    $('#lblSuggestion').text(arrLang[language]['EmployeeSuggestions']['Suggestion']);
-    */
+    this.language=lcid==13313?"ar":"en";
+    $('#btnSubmit').text(arrLang[this.language]['PushSms']['Send']);
+    $('#idTitle').attr("placeholder", arrLang[this.language]['PushSms']['EnterMobileNumber']);
+    $('#idSubject').attr("placeholder", arrLang[this.language]['PushSms']['SubjectError']);
+    $('#lblTitle').text(arrLang[this.language]['PushSms']['MobileNumber']);
+    $('#lblSuggestion').text(arrLang[this.language]['PushSms']['Message']);
+    $('#italic_Multimob').html(arrLang[this.language]['PushSms']['MultiNumNote']);
+    $('#lblSubject').text(arrLang[this.language]['PushSms']['Subject']);
+
+    $('#lbl_Language').text(arrLang[this.language]['PushSms']['Language']);
+    $('#lbl_rb_Arabic').text(arrLang[this.language]['PushSms']['Arabic']);
+    $('#lbl_rb_English').text(arrLang[this.language]['PushSms']['English']);
+    
   }
 
   private setButtonsEventHandlers(): void {
     const webPart: PushSmsWebPart = this;
-    // this.domElement.querySelector('button.find-Button').addEventListener('click', () => { webPart.find(); });
-    this.domElement.querySelector('#btnSubmit').addEventListener('click', () => { 
+    
+    this.domElement.querySelector('#btnSubmit').addEventListener('click', (e) => { 
+      e.preventDefault();
       webPart.send();
      });    
+     
   }
 
   private _validateDescription(value: string): string {
-    // If validation is not successful, return a string with error message.
-    if (value.length < 10) {
-      return "At least 10 characters required";
+    if (value.length <= 0) {
+      return arrLang[this.language]['PushSms']['MessageError'];
     }
     else {
-      // If validation is successful, return an empty string.
-      return "";
+      return " ";
+    }
+  }
+  private _validateMobileNumber(value: string): string {
+    if (value.length <= 0) {
+      return arrLang[this.language]['PushSms']['MobileError'];
+    }
+    else {
+      return " ";
+    }
+  }
+  private _validateSubject(value: string): string {
+    if (value.length <= 0) {
+      return arrLang[this.language]['PushSms']['SubjectError'];
+    }
+    else {
+      return " ";
     }
   }
 
@@ -93,55 +132,51 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
       'Title': document.getElementById('idTitle')["value"],
       'Suggestion': document.getElementById('idSuggestion')["value"],    
     });
-    
-    this._validateDescription( document.getElementById('idSuggestion')["value"]);
-
+    $("#lbl_MobNumerr").empty();
+    document.getElementById('lbl_MobNumerr').append(this._validateMobileNumber( document.getElementById('idTitle')["value"]));
+    $("#lbl_Msgerr").empty();
+    document.getElementById('lbl_Msgerr').append(this._validateDescription( document.getElementById('idSuggestion')["value"]));
+    $("#lbl_subjecterr").empty();
+    document.getElementById('lbl_subjecterr').append(this._validateSubject( document.getElementById('idSubject')["value"]));
+    $("#lbl_Langerr").empty();
+    var isChecked = jQuery("input[name=language]:checked").val();
+    if(isChecked!="L" && isChecked!="A"){
+      document.getElementById('lbl_Langerr').append(arrLang[this.language]['PushSms']['LangErr']);
+    }
     const httpClientOptions: IHttpClientOptions = {
       headers: new Headers(),
       method: "GET",
       mode: "cors"
     };
-
-  this.context.spHttpClient
-  .get("https://apitec.azurewebsites.net/api/pushsms", SPHttpClient.configurations.v1,httpClientOptions)
-  //.get("http://62.215.226.164/fccsms.aspx?UID=Tourent&p=tour@321&S=InfoText&G=96565058449&M=Testmsg&L=L", SPHttpClient.configurations.v1,httpClientOptions)
-  .then((data: any): void => {
+   var msgsubject=(document.getElementById('idSubject')["value"]).trim();
+   var msgdesc=(document.getElementById('idSuggestion')["value"]).trim();
+   var mobilenum=document.getElementById('idTitle')["value"];
+  
+   var selectedMsgLangVal =$('input[name="language"]:checked').val();
+   
+    
+     //var url="https://apitec.azurewebsites.net/api/pushsms/Tourent/tour@321/"+msgsubject+"/"+msgdesc+"/"+mobilenum+"/"+selectedMsgLangVal;
+     var url="https://apitec.azurewebsites.net/api/pushsms/Tourent/tour@321/InfoText/"+msgdesc+"/"+mobilenum+"/"+selectedMsgLangVal;
+     this.context.spHttpClient
+     .get(url, SPHttpClient.configurations.v1,httpClientOptions)
+      //.get("http://62.215.226.164/fccsms.aspx?UID=Tourent&p=tour@321&S=InfoText&G=96565058449&M=Testmsg&L=L", SPHttpClient.configurations.v1,httpClientOptions)
+    .then((data: any): void => {
     //return response.json().then((items: any): void => {
-      console.log(data);
+      if(data.status==200 && data.statusText=="OK")
+      {
+      $("#lblDisplayMsg").empty();
+      document.getElementById('lblDisplayMsg').append(arrLang[this.language]['PushSms']['SuccessMessage']);
+      this.clear();
+      }
+      else{
+        $("#lblDisplayMsg").empty();
+      document.getElementById('lblDisplayMsg').append(data.status);
+      }
     }, (error: any): void => {
-      alert(error);
+      $("#lblDisplayMsg").empty();
+      document.getElementById('lblDisplayMsg').append(error);
     });
  
-  /*.then((res: HttpClientResponse): Promise<any> =>  {       
-    return res.json();
-  })
-  .then((data: any): void => {
-    console.log(data);
-    // process your data here
-  }, (err: any): void => {
-    // handle error here
-    console.log(err);
-  });
-
-    //http://62.215.226.164/fccsms.aspx?UID=Tourent&p=tour@321&S=InfoText&G=919700917427&M=Testmsg&L=L
-
-    //this.context.spHttpClient.post(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items`,
-    /*this.context.spHttpClient.post(`http://62.215.226.164/fccsms.aspx?UID=Tourent&p=tour@321&S=InfoText&G=('${this.num}')&M=('${this.msg}')&L=L`,
-      SPHttpClient.configurations.v1,
-      {
-        headers: {
-          'Accept': 'application/json;odata=nometadata',
-          'X-HTTP-Method': 'POST'
-        },
-        body: body
-      }).then((response: SPHttpClientResponse): void => {
-        //this.getListData();
-        this.clear();
-        alert('message sent successfully &  Saved ');
-      }, (error: any): void => {
-        alert(`${error}`);
-      });
-    */
  
   }
 
