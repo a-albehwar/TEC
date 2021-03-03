@@ -129,6 +129,22 @@
           "manifest": "./src/webparts/twitter/TwitterWebPart.manifest.json"
         }
       ]
+    },
+    "kb-details-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/kbDetails/KbDetailsWebPart.js",
+          "manifest": "./src/webparts/kbDetails/KbDetailsWebPart.manifest.json"
+        }
+      ]
+    },
+    "knowledge-base-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/knowledgeBase/KnowledgeBaseWebPart.js",
+          "manifest": "./src/webparts/knowledgeBase/KnowledgeBaseWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {
@@ -157,6 +173,8 @@
     "TrainingCoursesWebPartStrings": "lib/webparts/trainingCourses/loc/{locale}.js",
     "NewEmployeeWebPartStrings": "lib/webparts/newEmployee/loc/{locale}.js",
     "MediaDetailsWebPartStrings": "lib/webparts/mediaDetails/loc/{locale}.js",
-    "TwitterWebPartStrings": "lib/webparts/twitter/loc/{locale}.js"
+    "TwitterWebPartStrings": "lib/webparts/twitter/loc/{locale}.js",
+    "KbDetailsWebPartStrings": "lib/webparts/kbDetails/loc/{locale}.js",
+    "KnowledgeBaseWebPartStrings": "lib/webparts/knowledgeBase/loc/{locale}.js"
   }
 }

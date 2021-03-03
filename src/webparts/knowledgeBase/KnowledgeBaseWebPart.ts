@@ -7,39 +7,26 @@ import {
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
-import * as strings from 'NewEmployeeWebPartStrings';
-import NewEmployee from './components/NewEmployee';
-import { INewEmployeeProps } from './components/INewEmployeeProps';
+import * as strings from 'KnowledgeBaseWebPartStrings';
+import KnowledgeBase from './components/KnowledgeBase';
+import { IKnowledgeBaseProps } from './components/IKnowledgeBaseProps';
 
-export interface INewEmployeeWebPartProps {
+export interface IKnowledgeBaseWebPartProps {
   description: string;
-  siteurl: string;
- 
 }
 
-export default class NewEmployeeWebPart extends BaseClientSideWebPart<INewEmployeeWebPartProps> {
+export default class KnowledgeBaseWebPart extends BaseClientSideWebPart<IKnowledgeBaseWebPartProps> {
 
-  /*public render(): void {
-    const element: React.ReactElement<INewEmployeeProps> = React.createElement(
-      NewEmployee,
-      {
-        description: this.properties.description,
-      }
-    );
-
-    ReactDom.render(element, this.domElement);
-  }
-  */
   public render(): void {
-    const element: React.ReactElement<INewEmployeeProps> = React.createElement(
-      NewEmployee,
+    const element: React.ReactElement<IKnowledgeBaseProps> = React.createElement(
+      KnowledgeBase,
       {
         description: this.properties.description,
-        siteurl: this.context.pageContext.site.absoluteUrl,
-        spHttpClient: this.context.spHttpClient,
-        pageSize: 2,
         weburl:this.context.pageContext.web.absoluteUrl,
         pagecultureId:this.context.pageContext.cultureInfo.currentUICultureName,
+        spHttpClient: this.context.spHttpClient,
+        siteurl: this.context.pageContext.site.absoluteUrl,
+        pageSize:2,
       }
     );
 
@@ -50,7 +37,8 @@ export default class NewEmployeeWebPart extends BaseClientSideWebPart<INewEmploy
     ReactDom.unmountComponentAtNode(this.domElement);
   }
 
- /* protected get dataVersion(): Version {
+  /*
+  protected get dataVersion(): Version {
     return Version.parse('1.0');
   }
   */

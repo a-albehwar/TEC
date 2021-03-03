@@ -12,6 +12,7 @@ import * as $ from 'jquery';
 //import { SPHttpClient, SPHttpClientResponse,HttpClientResponse,HttpClient,IHttpClientOptions } from '@microsoft/sp-http';
 
 import { SPHttpClient, SPHttpClientResponse,IHttpClientOptions } from "@microsoft/sp-http";
+import { HttpRequestError } from '@pnp/odata';
 
 export interface IPushSmsWebPartProps {
   description: string;
@@ -28,33 +29,35 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
   public render(): void {
     this.domElement.innerHTML = `
     <br/>
-    <div class="col-lg-4 mb-2">
-      <label id="lbl_Language" class="form-label"></label><br/>
-      <input type="radio" id="rb_arabic" name="language" value="A">
-      <label for="arabic" id="lbl_rb_Arabic"></label><br>
-      <input type="radio" id="rb_english" name="language" value="L">
-      <label for="english"  id="lbl_rb_English"></label><br>
+    <div class="col-lg-4  mb-2">
+      <label id="lbl_Language" class="form-label"></label>
+    </div>
+    <div class="col-lg-4 mb-2 vleft">
+      <input type="radio" id="rb_arabic" name="language" class="form-control" value="A">
+      <label for="arabic" id="lbl_rb_Arabic" class="form-label"></label><br>
+      <input type="radio" id="rb_english" name="language" class="form-control" value="L">
+      <label for="english"  id="lbl_rb_English" class="form-label"></label><br>
       <label id="lbl_Langerr" class="form-label" style="color:red"></label>
     </div>
     <div class="col-lg-4  mb-2">    
       <label id="lblTitle" class="form-label">Mobile Number </label>
-      <input type="text" id="idTitle" class="form-input" name="Title"><br>
-      <i id="italic_Multimob"></i>
+      <input type="text" id="idTitle" class="form-control" name="Title"><br>
+      <i id="italic_Multimob" class="form-label"></i>
       <label id="lbl_MobNumerr" class="form-label" style="color:red"></label>
     </div> 
     <div class="col-lg-4  mb-2">    
       <label id="lblSubject" class="form-label"></label>
-      <input type="text" id="idSubject" class="form-input" name="Subject"><br>
+      <input type="text" id="idSubject" class="form-control" name="Subject"><br>
       <label id="lbl_subjecterr" class="form-label" style="color:red"></label>
     </div>   
     <div class="col-lg-4  mb-2">    
       <label id="lblSuggestion" class="form-label"> Message </label>
-      <textarea style="height:auto !important" rows="5" cols="5" id="idSuggestion" class="form-input" name="Suggesstion"> 
+      <textarea style="height:auto !important" rows="5" cols="5" id="idSuggestion" class="form-control" name="Suggesstion"> 
       </textarea><br>
       <label id="lbl_Msgerr" class="form-label" style="color:red"></label>
     </div>  
     <div class="col-lg-4">
-      <button class="red-btn red-btn-effect shadow-sm  mt-4" id="btnSubmit"></button>
+      <button class="red-btn shadow-sm  mt-4" id="btnSubmit"></button>
     </div>
     <br>
     <label id="lblDisplayMsg" class="form-label"></label> 
@@ -75,12 +78,13 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
     $('#btnSubmit').text(arrLang[this.language]['PushSms']['Send']);
     $('#idTitle').attr("placeholder", arrLang[this.language]['PushSms']['EnterMobileNumber']);
     $('#idSubject').attr("placeholder", arrLang[this.language]['PushSms']['SubjectError']);
+    //$('#idSuggestion').attr("placeholder", arrLang[this.language]['PushSms']['TypeMessagehere']);
     $('#lblTitle').text(arrLang[this.language]['PushSms']['MobileNumber']);
     $('#lblSuggestion').text(arrLang[this.language]['PushSms']['Message']);
     $('#italic_Multimob').html(arrLang[this.language]['PushSms']['MultiNumNote']);
     $('#lblSubject').text(arrLang[this.language]['PushSms']['Subject']);
 
-    $('#lbl_Language').text(arrLang[this.language]['PushSms']['Language']);
+    $('#lbl_Language').text(arrLang[this.language]['PushSms']['Lang']);
     $('#lbl_rb_Arabic').text(arrLang[this.language]['PushSms']['Arabic']);
     $('#lbl_rb_English').text(arrLang[this.language]['PushSms']['English']);
     
@@ -121,13 +125,10 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
     }
   }
 
-  /*private  num= document.getElementById('idTitle')["value"];
-  private msg=document.getElementById('idSuggestion')["value"];
-  */
   private send(): void {
 
 
-
+    
     const body: string = JSON.stringify({
       'Title': document.getElementById('idTitle')["value"],
       'Suggestion': document.getElementById('idSuggestion')["value"],    
@@ -146,15 +147,16 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
     const httpClientOptions: IHttpClientOptions = {
       headers: new Headers(),
       method: "GET",
-      mode: "cors"
+      mode: "cors",
+      
     };
    var msgsubject=(document.getElementById('idSubject')["value"]).trim();
    var msgdesc=(document.getElementById('idSuggestion')["value"]).trim();
    var mobilenum=document.getElementById('idTitle')["value"];
   
-   var selectedMsgLangVal =$('input[name="language"]:checked').val();
    
-    
+   
+    /*
      //var url="https://apitec.azurewebsites.net/api/pushsms/Tourent/tour@321/"+msgsubject+"/"+msgdesc+"/"+mobilenum+"/"+selectedMsgLangVal;
      var url="https://apitec.azurewebsites.net/api/pushsms/Tourent/tour@321/InfoText/"+msgdesc+"/"+mobilenum+"/"+selectedMsgLangVal;
      this.context.spHttpClient
@@ -170,14 +172,56 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
       }
       else{
         $("#lblDisplayMsg").empty();
-      document.getElementById('lblDisplayMsg').append(data.status);
+     // document.getElementById('lblDisplayMsg').append(data.status);
       }
     }, (error: any): void => {
       $("#lblDisplayMsg").empty();
       document.getElementById('lblDisplayMsg').append(error);
     });
  
- 
+    */
+   if(msgsubject!=null && msgdesc!=null && mobilenum!=null && isChecked!=null){
+     
+      var getJSON = function(url, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = 'json';
+        
+        xhr.onload = function() {
+        
+            var status = xhr.status;
+            
+            if (status == 200) {
+                callback(null, xhr.response);
+            } else {
+                callback(status);
+            }
+        };
+        
+        xhr.send();
+    };
+    
+    getJSON('https://apitec.azurewebsites.net/api/pushsms/Tourent/tour@321/'+msgsubject+'/'+msgdesc+'/'+mobilenum+'/'+isChecked,  function(err, data) {
+        
+        if (err != null) {
+            console.log(err);
+            //alert(err);
+        } else {
+           console.log(data);
+            if(data.startsWith("00"))
+            {
+              alert(arrLang[this.language]['PushSms']['SuccessMessage']);
+            }
+            else{
+            alert(data);
+            }
+        }
+    });
+  }
+  else{
+    alert("Please fill mandatory fields");
+  }
+
   }
 
   

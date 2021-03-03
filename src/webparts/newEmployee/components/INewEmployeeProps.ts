@@ -7,4 +7,5 @@ export interface INewEmployeeProps {
     spHttpClient: SPHttpClient;
     pageSize: number;
     weburl:string;
+    pagecultureId:string;
 }

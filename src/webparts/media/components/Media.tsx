@@ -88,19 +88,7 @@ export default class Media extends React.Component<IMediaProps, IMediaStates> {
     this.readItems(url);    
   }
 
-  public getMediaInfo = () =>{    
-    sp.site.rootWeb.lists.getByTitle("Media").items.orderBy("ID",true).getAll().    
-    then((results : any[])=>{    
-        console.log(results.length);
-        
-        this.setState({    
-          itemCount:results.length,
-          employeeList:results,
-          totalPages:Math.ceil(results.length/this.state.pageSize),
-        });    
-        //this.state.totalPages= Math.ceil(this.state.itemCount/this.state.pageSize)
-    });    
-  } 
+  
 
   /*  public componentDidMount(){    
    // this.getMediaInfo();    
@@ -177,20 +165,13 @@ export default class Media extends React.Component<IMediaProps, IMediaStates> {
     });
   }
   public render(): React.ReactElement<IMediaProps> {
-    const sayHello = (e) => {
-      console.log("haa");
-      e.preventDefault();
-      //window.location.href=redirectPageUrl;
-      //return false;
-      //window.open(redirectPageUrl, '_self');
-     
-    };
+   
     var weburl=this.props.weburl;
     var langcode=this.props.pagecultureId;
     lang=langcode=="en-US"?"en":"ar";
     var readitemtext=arrLang[lang]['Common']['ReadMore'];
     return (
-      
+
       <section className={"innerpagecont"}>
         <div className={"Inner-page-title mb-4"}>
                 <h2 className={"page-heading"}> Media </h2>
@@ -239,14 +220,9 @@ export default class Media extends React.Component<IMediaProps, IMediaStates> {
       </section>
       
     );
-    //this.Localization();
+  
     
   }
-  private Localization(): void {
-    
-    var lcid=this.context.pageContext.legacyPageContext['currentCultureLCID'];  
-    var language=lcid==13313?"ar":"en";
-    
-  }
+
   
 }

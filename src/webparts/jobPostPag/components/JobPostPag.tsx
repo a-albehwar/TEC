@@ -97,7 +97,7 @@ export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPos
               <div className="col-12 my-4">
                <h2 id="h2_curOpp">{arrLang[lang]['Jobs']['CurrOppur']}</h2>
 			        </div>
-              <div id="job_item_row">
+              <div id="job_item_row" className="w-100">
             {this.state.items.map(function(item,key){ 
               var momentObj = moment(item.ExpireDate);
               var formatExpDate=momentObj.format('DD-MM-YYYY');
