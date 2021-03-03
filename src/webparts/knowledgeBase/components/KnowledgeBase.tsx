@@ -126,7 +126,7 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
                         <thead>
                            <tr>
                               <th data-breakpoints="xs">{arrLang[lang]['KB']['Title']}</th>
-                              <th data-breakpoints="xs">{arrLang[lang]['KB']['CreatedDate']}</th>
+                              <th data-breakpoints="xs">{arrLang[lang]['KB']['Title']}</th>
                               <th data-breakpoints="xs">{arrLang[lang]['KB']['View']}</th>
                            </tr>
                         </thead>
