@@ -6,6 +6,8 @@ import { Pagination } from "@pnp/spfx-controls-react/lib/pagination";
 import * as moment from 'moment';
 
 import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http";
+import KnowledgeBaseWebPart from '../KnowledgeBaseWebPart';
+import { DisplayMode } from '@microsoft/sp-core-library';
 
 export interface IKnowledgeBaseStates{    
   KBList :any[],
@@ -17,6 +19,7 @@ export interface IKnowledgeBaseStates{
 
   declare var arrLang: any;
   declare var lang: any;
+  declare var surl: any;
 
 export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, IKnowledgeBaseStates> {
 
@@ -81,6 +84,12 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
     return queryParam;
   }
 
+  private searchbuildQueryParams(props: IKnowledgeBaseProps): string{
+    const p_ID = (this.state.currentPage - 1)*this.state.pageSize;
+    const squeryParam = `&$%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$top=${this.state.pageSize}`;
+    
+    return squeryParam;
+  }
   private readItems(url: string) {
     this.setState({
       KBList: [],
@@ -101,7 +110,7 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
       
       this.setState({
         KBList: response.value,
-   
+        //currentPage:1,
       });    
     }, (error: any): void => {
       this.setState({
@@ -115,11 +124,23 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
     var weburl=this.props.weburl;
     var langcode=this.props.pagecultureId;
     lang=langcode=="en-US"?"en":"ar";
+    //surl=this.props.siteurl;
     var siteurl=this.props.siteurl;
+    
+    //alert(siteurl);
     var viewimgurl=siteurl+"/Style%20Library/TEC/images/view.svg";
     return (
       
       <div className={"container-fluid"}>
+            <div className={"row"}>
+              <div className={"col-lg-4  mb-2"}>
+                <label className="form-label" id="lblEmployeeName">{arrLang[lang]['KB']['Title']}</label>
+                <input type="text" id='idSearchName' className="form-input" placeholder={arrLang[lang]['KB']['Title']}/>
+              </div>
+              <div className={"col-lg-4"}>
+                <button id="idBtnSearch" type="button" className={"red-btn shadow-sm  mt-4"} onClick={() => this.getSearchData(siteurl)} > <span>{arrLang[lang]['EmployeeDirectory']['Search']}</span></button>
+              </div>
+            </div>
             <div className={"row"}>
                <div className={"col-12"}>
                      <table className={"table table-bordered table-hover footable"}>
@@ -136,10 +157,10 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
                           var momentObj = moment(item.CreatedDate);
                           var formatCreatedDate=momentObj.format('DD-MM-YYYY');
                           var KBttitle=langcode=="en-US"?item.Title:item.Title_Ar;
-                          var KBDescstr = langcode=="en-US"?item.Description:item.Description_Ar;
-                          var KBsplitDesc = KBDescstr.substring(0, 100);
+                          //var KBDescstr = langcode=="en-US"?item.Description:item.Description_Ar;
+                          //var KBsplitDesc = KBDescstr.substring(0, 100);
                           var viewurl=weburl+"/Pages/TecPages/KB/KBDetails.aspx?kbid="+item.ID;
-                          var kbimgurl=item.Image.Url;
+                          //var kbimgurl=item.Image.Url;
 
                            return (
                             <tr>
@@ -153,7 +174,7 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
                       })} 
                         </tbody>
                      </table>
-                     <div className={"pager pagination col-12 d-flex justify-content-center"}>
+                     <div id="div_pagination" className={"pager pagination col-12 justify-content-center"}>
                           <Pagination
                             //totalItems={ this.state.itemCount }
                             //itemsCountPerPage={ this.state.pageSize } 
@@ -168,9 +189,74 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
                             limiterIcon={"Emoji12"} // Optional
                             />
                        </div>
+                       <div id="div_norecords" className={"justify-content-center"} style={{display: "none"}}>{arrLang[lang]['KB']['Norecords']}</div>
                 </div>
             </div>
         </div>  
     );
+  }
+  private getSearchData(surl) {
+    var searchKeyword=$("#idSearchName").val();
+   
+    if (searchKeyword!=''){
+      if(lang=="en"){
+          var searchurl=`${surl}/_api/web/lists/GetByTitle('KnowledgeBase')/items?$filter=substringof('${searchKeyword}',Title)`;
+      }
+      else{
+        var searchurl=`${surl}/_api/web/lists/GetByTitle('KnowledgeBase')/items?$filter=substringof('${searchKeyword}',Title_Ar)`;
+      }
+       console.log(searchurl);
+    
+        this.setState({
+          KBList: [],
+          //totalcounts:Math.round(this.state.itemCount%this.state.pageSize),
+          //status: 'Loading all items...'
+        });
+        
+        this.props.spHttpClient.get(searchurl,
+        SPHttpClient.configurations.v1,
+        {
+          headers: {
+            'Accept': 'application/json;odata=nometadata',
+            'odata-version': ''
+          }
+        }).then((response: SPHttpClientResponse): Promise<{value: any[]}> =>{
+        return response.json();
+        }).then((response: {value: any[]}): void => {     
+          $('#div_pagination').hide();
+          $('#div_norecords').hide();
+          if(response.value.length>0)
+          {
+            this.setState({
+              KBList: response.value,
+              itemCount: 0,
+              totalPages: 0,
+            }); 
+          }   
+          else{
+            /*this.state.KBList.push({Title:"No Records found",CreatedDate:"00-00-00",viewimgurl:"#",viewurl:"#"});
+            this.setState({
+              itemCount: 0,
+              totalPages: 0,
+            }); */
+            $('#div_norecords').show();
+          }
+        }, (error: any): void => {
+          this.setState({
+            KBList: [],
+            //status: 'Loading all items failed with error: ' + error
+          });
+        });  
+    }
+     else{
+        $('#div_pagination').show();
+        $('#div_norecords').hide();
+        this.getListItemsCount(`${this.props.siteurl}/_api/web/lists/GetByTitle('KnowledgeBase')/ItemCount`);
+        const queryParam = this.buildQueryParams(this.props);
+        var url = `${this.props.siteurl}/_api/web/lists/GetByTitle('KnowledgeBase')/items?`+ queryParam;
+        this.readItems(url);  
+          
+     }
+     
   }
 }
