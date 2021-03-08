@@ -6,6 +6,9 @@ import { sp} from "@pnp/sp/presets/all";
 
 declare var arrLang: any;
 declare var lang:string;
+const errormsgStyle = {
+  color: 'red',
+};
 
 export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxProps, any> {
   private language:string;
@@ -25,19 +28,19 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
       
         <div>
             <div className={"col-lg-4  mb-2"}>  
-               <label id="lblTitle" className="form-label"> {arrLang[lang]['SuggestionBox']['Title']} <span>*</span></label>
-               <input type="text" id="idTitle" className="form-input" name="Title" placeholder={arrLang[lang]['SuggestionBox']['Title']} />
-               <label id="lbl_subjecterr" className="form-label"></label>
+               <label id="lblTitle" className={"form-label"}> {arrLang[lang]['SuggestionBox']['Title']} <span style={errormsgStyle}>*</span></label>
+               <input type="text" id="idTitle" className={"form-control"} name="Title" placeholder={arrLang[lang]['SuggestionBox']['Title']} />
+               <label id="lbl_subjecterr" className={"form-label"}  style={errormsgStyle}></label>
             </div>
             <div className={"col-lg-4  mb-2"}>
-                <label id="lblSuggestion" className={"form-label"}> {arrLang[lang]['SuggestionBox']['Description']} <span>*</span></label>
-                <textarea id="idSuggestion" className={"form-input"} name="Suggesstion" placeholder={arrLang[lang]['SuggestionBox']['TypeMessagehere']}></textarea>
-                <label id="lbl_suggestionerr" className="form-label"></label>
+                <label id="lblSuggestion" className={"form-label"}> {arrLang[lang]['SuggestionBox']['Description']} <span  style={errormsgStyle}>*</span></label>
+                <textarea id="idSuggestion" className={"form-control"} name="Suggesstion" placeholder={arrLang[lang]['SuggestionBox']['TypeMessagehere']}></textarea>
+                <label id="lbl_suggestionerr" className={"form-label"} style={errormsgStyle}></label>
             </div>
             <div className={"col-lg-4  mb-2"}>
-                <label id="lblattach" className={"form-label"}>{arrLang[lang]['SuggestionBox']['Attachment']}<span>*</span></label>
-                <input type="file" multiple={true} id="file" onChange={this.addFile.bind(this)} />
-                <label id="lbl_attachmenterr" className="form-label"></label>
+                <label id="lblattach" className={"form-label"}>{arrLang[lang]['SuggestionBox']['Attachment']}<span  style={errormsgStyle}>*</span></label>
+                <input type="file" multiple={true} className={"form-control"} id="file" onChange={this.addFile.bind(this)} />
+                <label id="lbl_attachmenterr" className={"form-label"}  style={errormsgStyle}></label>
             </div>
             <div className="col-lg-4">
               
@@ -105,25 +108,50 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
     document.getElementById('lbl_subjecterr').append(this._validateSubject( sug_title));
     $("#lbl_suggestionerr").empty();
     document.getElementById('lbl_suggestionerr').append(this._validateDescription(sug_Desc));
-
-
+    $("#lbl_attachmenterr").empty();
+    if(this.state.fileInfos==null || this.state.fileInfos==undefined )
+    {
+      document.getElementById('lbl_attachmenterr').append(arrLang[lang]['SuggestionBox']['AttachError']);
+    }
+    
     if(sug_title !="" && sug_Desc !="" && this.state.fileInfos!=null && this.state.fileInfos!=undefined ){
+
       let {fileInfos}=this.state;
-      sp.site.rootWeb.lists.getByTitle("SuggestionsBox").items.add({
-        Title:  sug_title,
-        Description:sug_Desc,
-      }).then(r=>{
-        r.item.attachmentFiles.addMultiple(fileInfos);
-        alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
-        window.location.href=this.props.weburl;
-      }).catch(function(err) {  
-        console.log(err);  
-    });
+       if(lang=="en"){
+            sp.site.rootWeb.lists.getByTitle("SuggestionsBox").items.add({
+              Title:  sug_title,
+              Description:sug_Desc,
+              Suggestion_StatusId: 1,
+            }).then(r=>{
+              r.item.attachmentFiles.addMultiple(fileInfos);
+              alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
+              window.location.href=this.props.weburl;
+            }).catch(function(err) {  
+              console.log(err);  
+          });
+       }
+       else if(lang=="ar")
+       {
+            sp.site.rootWeb.lists.getByTitle("SuggestionsBox").items.add({
+              Title_Ar: sug_title,
+              Title:  sug_title,
+              Description_Ar:sug_Desc,
+              Suggestion_StatusId: 1,
+            }).then(r=>{
+              r.item.attachmentFiles.addMultiple(fileInfos);
+              alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
+              window.location.href=this.props.weburl;
+            }).catch(function(err) {  
+              console.log(err);  
+          });
+       }
     }
     else{
-      alert(arrLang[lang]['SuggestionBox']['FillMandatoryFields']);
+      //alert(arrLang[lang]['SuggestionBox']['FillMandatoryFields']);
       event.preventDefault();
       return false;
     }  
+    event.preventDefault();
+    return false;
   }
 }
