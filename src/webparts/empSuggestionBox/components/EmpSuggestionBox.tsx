@@ -35,13 +35,17 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
                 <label id="lbl_suggestionerr" className="form-label"></label>
             </div>
             <div className={"col-lg-4  mb-2"}>
-                <label id="lblattach" className={"form-label"}><span>*</span></label>
+                <label id="lblattach" className={"form-label"}>{arrLang[lang]['SuggestionBox']['Attachment']}<span>*</span></label>
                 <input type="file" multiple={true} id="file" onChange={this.addFile.bind(this)} />
                 <label id="lbl_attachmenterr" className="form-label"></label>
             </div>
             <div className="col-lg-4">
-              <input type="button" value={arrLang[lang]['SuggestionBox']['Submit']} className="red-btn red-btn-effect shadow-sm  mt-4" onClick={this.upload.bind(this)} />
-              <button className={"red-btn shadow-sm  mt-4"} id="btnCancel">{arrLang[lang]['SuggestionBox']['Cancel']} </button>
+              
+              <button className={"red-btn red-btn-effect shadow-sm  mt-4"} id="btnSubmit"   onClick={this.upload.bind(this)}>{arrLang[lang]['SuggestionBox']['Submit']}</button>
+              <button className={"red-btn  red-btn-effect shadow-sm  mt-4"} id="btnCancel"  onClick={(e) => {
+                          e.preventDefault();
+                          window.location.href=weburl;
+                          }}>{arrLang[lang]['SuggestionBox']['Cancel']}</button>
             </div> 
         </div>
       
@@ -51,12 +55,22 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
   
   private _validateSubject(value: string): string {
     if (value.length <= 0) {
-      return "Title Subject is Mandatory";
+      return arrLang[lang]['SuggestionBox']['SugTitleError'];
     }
     else {
       return " ";
     }
   }
+
+  private _validateDescription(value: string): string {
+    if (value.length <= 0) {
+      return arrLang[lang]['SuggestionBox']['SugDescError'];
+    }
+    else {
+      return " ";
+    }
+  }
+
   private addFile(event) {
     //let resultFile = document.getElementById('file');
     let resultFile = event.target.files;
@@ -82,32 +96,34 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
     console.log(fileInfos)
   }
 
-  private upload() {
+  private upload(event) {
     var sug_title=$("#idTitle").val();
     var sug_Desc=$("#idSuggestion").val();
     
     
     $("#lbl_subjecterr").empty();
+    document.getElementById('lbl_subjecterr').append(this._validateSubject( sug_title));
+    $("#lbl_suggestionerr").empty();
+    document.getElementById('lbl_suggestionerr').append(this._validateDescription(sug_Desc));
 
-    document.getElementById('lbl_subjecterr').append(this._validateSubject( document.getElementById('idTitle')["value"]));
-    
-    if(sug_title !=null && sug_Desc !=null ){
+
+    if(sug_title !="" && sug_Desc !="" && this.state.fileInfos!=null && this.state.fileInfos!=undefined ){
       let {fileInfos}=this.state;
       sp.site.rootWeb.lists.getByTitle("SuggestionsBox").items.add({
-        Title:  $("#idTitle").val(),
-        Description:$("#idSuggestion").val(),
+        Title:  sug_title,
+        Description:sug_Desc,
       }).then(r=>{
         r.item.attachmentFiles.addMultiple(fileInfos);
-        alert("Suggestion "+r.data.Title +"created successfully");
+        alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
         window.location.href=this.props.weburl;
       }).catch(function(err) {  
         console.log(err);  
     });
     }
     else{
-      alert(arrLang[this.language]['SuggestionBox']['FillMandatoryFields']);
-    }
-    
-    
+      alert(arrLang[lang]['SuggestionBox']['FillMandatoryFields']);
+      event.preventDefault();
+      return false;
+    }  
   }
 }
