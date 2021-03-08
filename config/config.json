@@ -145,6 +145,22 @@
           "manifest": "./src/webparts/knowledgeBase/KnowledgeBaseWebPart.manifest.json"
         }
       ]
+    },
+    "suggestion-box-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/suggestionBox/SuggestionBoxWebPart.js",
+          "manifest": "./src/webparts/suggestionBox/SuggestionBoxWebPart.manifest.json"
+        }
+      ]
+    },
+    "emp-suggestion-box-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/empSuggestionBox/EmpSuggestionBoxWebPart.js",
+          "manifest": "./src/webparts/empSuggestionBox/EmpSuggestionBoxWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {
@@ -175,6 +191,8 @@
     "MediaDetailsWebPartStrings": "lib/webparts/mediaDetails/loc/{locale}.js",
     "TwitterWebPartStrings": "lib/webparts/twitter/loc/{locale}.js",
     "KbDetailsWebPartStrings": "lib/webparts/kbDetails/loc/{locale}.js",
-    "KnowledgeBaseWebPartStrings": "lib/webparts/knowledgeBase/loc/{locale}.js"
+    "KnowledgeBaseWebPartStrings": "lib/webparts/knowledgeBase/loc/{locale}.js",
+    "SuggestionBoxWebPartStrings": "lib/webparts/suggestionBox/loc/{locale}.js",
+    "EmpSuggestionBoxWebPartStrings": "lib/webparts/empSuggestionBox/loc/{locale}.js"
   }
 }
