@@ -1,27 +1,24 @@
 import * as React from 'react';
-import styles from './KnowledgeBase.module.scss';
-import { IKnowledgeBaseProps } from './IKnowledgeBaseProps';
+import styles from './SuggestionsGrid.module.scss';
+import { ISuggestionsGridProps } from './ISuggestionsGridProps';
 import { escape } from '@microsoft/sp-lodash-subset';
 import { Pagination } from "@pnp/spfx-controls-react/lib/pagination";
 import * as moment from 'moment';
-
 import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http";
-import KnowledgeBaseWebPart from '../KnowledgeBaseWebPart';
-import { DisplayMode } from '@microsoft/sp-core-library';
 
-export interface IKnowledgeBaseStates{    
-  KBList :any[],
+export interface ISuggestionsGridStates{    
+  SuggestionBoxList :any[],
   currentPage:number,
   totalPages:number,
   pageSize:number,
   itemCount:number,
 }
 
-  declare var arrLang: any;
-  declare var lang: any;
-  declare var surl: any;
+declare var arrLang: any;
+declare var lang: any;
+declare var surl: any;
 
-export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, IKnowledgeBaseStates> {
+export default class SuggestionsGrid extends React.Component<ISuggestionsGridProps, ISuggestionsGridStates> {
 
   private _getPage(page: number){
     //console.log('Page:', page);
@@ -32,19 +29,19 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
     this._onPageUpdate(page);
   }
 
-  constructor(props: IKnowledgeBaseProps){    
+  constructor(props: ISuggestionsGridProps){    
     super(props);    
     this.state ={    
-      KBList : [],
+      SuggestionBoxList : [],
       currentPage:1,
       totalPages:0,
-      pageSize:2, // change no of items for page as your requirement
+      pageSize:10, // change no of items for page as your requirement
       itemCount:0,
     }    
-    this.getListItemsCount(`${this.props.siteurl}/_api/web/lists/GetByTitle('KnowledgeBase')/ItemCount`);
+    this.getListItemsCount(`${this.props.siteurl}/_api/web/lists/GetByTitle('SuggestionsBox')/ItemCount`);
     const queryParam = this.buildQueryParams(props);
-    this.readItems(`${this.props.siteurl}/_api/web/lists/GetByTitle('KnowledgeBase')/items${queryParam}`);
-  } 
+    this.readItems(`${this.props.siteurl}/_api/web/lists/GetByTitle('SuggestionsBox')/items${queryParam}`);
+  }
 
   private getListItemsCount(url: string) {
     this.props.spHttpClient.get(url,SPHttpClient.configurations.v1,
@@ -73,26 +70,21 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
     
    //?$select=ID,WorkType,ApplyLink,ExpireDate,Title,LK_Departments/ID,LK_Departments/Title&$expand=LK_Departments
     const queryParam = `%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$top=${this.state.pageSize}`;
-    var url = `${this.props.siteurl}/_api/web/lists/GetByTitle('KnowledgeBase')/items?`+ queryParam;
-    this.readItems(url);    
+    var url = `${this.props.siteurl}/_api/web/lists/GetByTitle('SuggestionsBox')/items?`+ queryParam+``;
+    this.readItems(url);    //&$select=ID,Title,Title_Ar,Description,Description_Ar,Suggestion_StatusTitle/Suggestion_Status&$expand=Suggestion_Status
   }
+  
 
-  private buildQueryParams(props: IKnowledgeBaseProps): string{
+  private buildQueryParams(props: ISuggestionsGridProps): string{
     const p_ID = (this.state.currentPage - 1)*this.state.pageSize;
     const queryParam = `?%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$top=${this.state.pageSize}`;
     
     return queryParam;
   }
 
-  private searchbuildQueryParams(props: IKnowledgeBaseProps): string{
-    const p_ID = (this.state.currentPage - 1)*this.state.pageSize;
-    const squeryParam = `&$%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$top=${this.state.pageSize}`;
-    
-    return squeryParam;
-  }
   private readItems(url: string) {
     this.setState({
-      KBList: [],
+      SuggestionBoxList: [],
       //totalcounts:Math.round(this.state.itemCount%this.state.pageSize),
       //status: 'Loading all items...'
     });
@@ -109,18 +101,18 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
     }).then((response: {value: any[]}): void => {     
       
       this.setState({
-        KBList: response.value,
+        SuggestionBoxList: response.value,
         //currentPage:1,
       });    
     }, (error: any): void => {
       this.setState({
-        KBList: [],
+        SuggestionBoxList: [],
         //status: 'Loading all items failed with error: ' + error
       });
     });
   }
 
-  public render(): React.ReactElement<IKnowledgeBaseProps> {
+  public render(): React.ReactElement<ISuggestionsGridProps> {
     var weburl=this.props.weburl;
     var langcode=this.props.pagecultureId;
     lang=langcode=="en-US"?"en":"ar";
@@ -146,25 +138,30 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
                      <table className={"table table-bordered table-hover footable"}>
                         <thead>
                            <tr>
-                              <th data-breakpoints="xs">{arrLang[lang]['KB']['Title']}</th>
-                              <th data-breakpoints="xs">{arrLang[lang]['KB']['Title']}</th>
-                              <th data-breakpoints="xs">{arrLang[lang]['KB']['View']}</th>
+                             <th data-breakpoints="xs">{arrLang[lang]['SuggestionBox']['Title']}</th>
+                              <th data-breakpoints="xs">{arrLang[lang]['SuggestionBox']['Description']}</th>
+                              
+                              <th data-breakpoints="xs">{arrLang[lang]['SuggestionBox']['CreatedDate']}</th>
+                              <th data-breakpoints="xs">{arrLang[lang]['SuggestionBox']['View']}</th>      
                            </tr>
                         </thead>
                         <tbody>
-                        {this.state.KBList.map(function(item,key){
-                            var momentObj = moment(item.CreatedDate);
-                            var formatCreatedDate=momentObj.format('DD-MM-YYYY');
-                            var KBttitle=langcode=="en-US"?item.Title:item.Title_Ar;
-                            //var KBDescstr = langcode=="en-US"?item.Description:item.Description_Ar;
-                            //var KBsplitDesc = KBDescstr.substring(0, 100);
-                            var viewurl=weburl+"/Pages/TecPages/KB/KBDetails.aspx?kbid="+item.ID;
-                            //var kbimgurl=item.Image.Url;
-
-
+                        {this.state.SuggestionBoxList.map(function(item,key){
+                          
+                            //&$select=ID,Title,Title_Ar,Description,Description_Ar,Suggestion_StatusTitle/Suggestion_Status&$expand=Suggestion_Status
+                          var momentObj = moment(item.CreatedDate);
+                          var formatCreatedDate=momentObj.format('DD-MM-YYYY');
+                          var Sugtitle=langcode=="en-US"?item.Title:item.Title_Ar;
+                          var SugDescstr = langcode=="en-US"?item.Description:item.Description_Ar;
+                          var SugStatus = langcode=="en-US"?item.Suggestion_StatusTitle:item.Suggestion_StatusTitle;
+                          //var KBsplitDesc = KBDescstr.substring(0, 100);
+                          var viewurl=weburl+"/Pages/TecPages/EmployeeSuggestions/ViewSuggestion.aspx?vsid="+item.ID;
+                          var SugAttachmenturl="";//item.Image.Url;
                            return (
                             <tr>
-                                 <td>{KBttitle}</td>
+                                <td>{Sugtitle}</td>
+                                <td>{SugDescstr}</td>
+                               
                                 <td>{formatCreatedDate}</td>
                                 <td>
                                 <a href={viewurl}><img src={viewimgurl} className={"img-fluid"}/></a>
@@ -195,20 +192,21 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
         </div>  
     );
   }
+
   private getSearchData(surl) {
     var searchKeyword=$("#idSearchName").val();
    
     if (searchKeyword!=''){
       if(lang=="en"){
-          var searchurl=`${surl}/_api/web/lists/GetByTitle('KnowledgeBase')/items?$filter=substringof('${searchKeyword}',Title)`;
+          var searchurl=`${surl}/_api/web/lists/GetByTitle('SuggestionsBox')/items?$filter=substringof('${searchKeyword}',Title)`;
       }
       else{
-        var searchurl=`${surl}/_api/web/lists/GetByTitle('KnowledgeBase')/items?$filter=substringof('${searchKeyword}',Title_Ar)`;
+        var searchurl=`${surl}/_api/web/lists/GetByTitle('SuggestionsBox')/items?$filter=substringof('${searchKeyword}',Title_Ar)`;
       }
        console.log(searchurl);
     
         this.setState({
-          KBList: [],
+          SuggestionBoxList: [],
           //totalcounts:Math.round(this.state.itemCount%this.state.pageSize),
           //status: 'Loading all items...'
         });
@@ -228,7 +226,7 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
           if(response.value.length>0)
           {
             this.setState({
-              KBList: response.value,
+              SuggestionBoxList: response.value,
               itemCount: 0,
               totalPages: 0,
             }); 
@@ -243,7 +241,7 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
           }
         }, (error: any): void => {
           this.setState({
-            KBList: [],
+            SuggestionBoxList: [],
             //status: 'Loading all items failed with error: ' + error
           });
         });  
@@ -251,12 +249,13 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
      else{
         $('#div_pagination').show();
         $('#div_norecords').hide();
-        this.getListItemsCount(`${this.props.siteurl}/_api/web/lists/GetByTitle('KnowledgeBase')/ItemCount`);
+        this.getListItemsCount(`${this.props.siteurl}/_api/web/lists/GetByTitle('SuggestionsBox')/ItemCount`);
         const queryParam = this.buildQueryParams(this.props);
-        var url = `${this.props.siteurl}/_api/web/lists/GetByTitle('KnowledgeBase')/items?`+ queryParam;
+        var url = `${this.props.siteurl}/_api/web/lists/GetByTitle('SuggestionsBox')/items?`+ queryParam;
         this.readItems(url);  
           
      }
      
   }
+
 }

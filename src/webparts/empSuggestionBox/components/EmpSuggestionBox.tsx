@@ -44,8 +44,8 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
             </div>
             <div className="col-lg-4">
               
-              <button className={"red-btn red-btn-effect shadow-sm  mt-4"} id="btnSubmit"   onClick={this.upload.bind(this)}>{arrLang[lang]['SuggestionBox']['Submit']}</button>
-              <button className={"red-btn  red-btn-effect shadow-sm  mt-4"} id="btnCancel"  onClick={(e) => {
+              <button className={"red-btn red-btn-effect shadow-sm  mr-3"} id="btnSubmit"   onClick={this.upload.bind(this)}>{arrLang[lang]['SuggestionBox']['Submit']}</button>
+              <button className={"red-btn  red-btn-effect shadow-sm  mr-3"} id="btnCancel"  onClick={(e) => {
                           e.preventDefault();
                           window.location.href=weburl;
                           }}>{arrLang[lang]['SuggestionBox']['Cancel']}</button>

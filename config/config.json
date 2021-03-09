@@ -161,6 +161,14 @@
           "manifest": "./src/webparts/empSuggestionBox/EmpSuggestionBoxWebPart.manifest.json"
         }
       ]
+    },
+    "suggestions-grid-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/suggestionsGrid/SuggestionsGridWebPart.js",
+          "manifest": "./src/webparts/suggestionsGrid/SuggestionsGridWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {
@@ -180,7 +188,6 @@
     "HomePageSliderWebPartStrings": "lib/webparts/homePageSlider/loc/{locale}.js",
     "SocialMediaWebPartStrings": "lib/webparts/socialMedia/loc/{locale}.js",
     "WeatherWebPartStrings": "lib/webparts/weather/loc/{locale}.js",
-    "SmsAdminWebPartStrings": "lib/webparts/smsAdmin/loc/{locale}.js",
     "PushSmsWebPartStrings": "lib/webparts/pushSms/loc/{locale}.js",
     "JobPostingWebPartStrings": "lib/webparts/jobPosting/loc/{locale}.js",
     "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js",
@@ -193,6 +200,7 @@
     "KbDetailsWebPartStrings": "lib/webparts/kbDetails/loc/{locale}.js",
     "KnowledgeBaseWebPartStrings": "lib/webparts/knowledgeBase/loc/{locale}.js",
     "SuggestionBoxWebPartStrings": "lib/webparts/suggestionBox/loc/{locale}.js",
-    "EmpSuggestionBoxWebPartStrings": "lib/webparts/empSuggestionBox/loc/{locale}.js"
+    "EmpSuggestionBoxWebPartStrings": "lib/webparts/empSuggestionBox/loc/{locale}.js",
+    "SuggestionsGridWebPartStrings": "lib/webparts/suggestionsGrid/loc/{locale}.js"
   }
 }
