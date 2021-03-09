@@ -169,6 +169,14 @@
           "manifest": "./src/webparts/suggestionsGrid/SuggestionsGridWebPart.manifest.json"
         }
       ]
+    },
+    "view-suggestion-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/viewSuggestion/ViewSuggestionWebPart.js",
+          "manifest": "./src/webparts/viewSuggestion/ViewSuggestionWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {
@@ -201,6 +209,7 @@
     "KnowledgeBaseWebPartStrings": "lib/webparts/knowledgeBase/loc/{locale}.js",
     "SuggestionBoxWebPartStrings": "lib/webparts/suggestionBox/loc/{locale}.js",
     "EmpSuggestionBoxWebPartStrings": "lib/webparts/empSuggestionBox/loc/{locale}.js",
-    "SuggestionsGridWebPartStrings": "lib/webparts/suggestionsGrid/loc/{locale}.js"
+    "SuggestionsGridWebPartStrings": "lib/webparts/suggestionsGrid/loc/{locale}.js",
+    "ViewSuggestionWebPartStrings": "lib/webparts/viewSuggestion/loc/{locale}.js"
   }
 }

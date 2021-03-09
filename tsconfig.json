@@ -5,7 +5,7 @@
     "target": "es2015",
     "forceConsistentCasingInFileNames": true,
       // "module": "esnext",
-    "module": "es2015",
+    "module": "esnext",
     "moduleResolution": "node",
     "jsx": "react",
     "declaration": true,
