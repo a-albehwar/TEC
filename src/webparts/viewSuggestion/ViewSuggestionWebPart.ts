@@ -13,11 +13,10 @@ import * as moment from 'moment';
 import { sp } from "@pnp/sp/presets/all";
 
 import { Web, IWeb } from "@pnp/sp/webs";
-
 import "@pnp/sp/site-users/web";
 import { SiteGroups } from '@pnp/sp/site-groups';
 import * as $ from 'jquery';
-
+ 
 export interface IViewSuggestionWebPartProps {
   description: string;
 }
@@ -27,7 +26,9 @@ declare var arrLang: any;
 declare var lang: any;
 const url : any = new URL(window.location.href);
 const vsid= url.searchParams.get("vsid");
+var statusid;
 
+var isinnovateteamMember;
 export interface ISPLists 
 {
   value: ISPList[];
@@ -44,6 +45,12 @@ export interface ISPList
   Description_Ar:string;
   CreatedDate:string;
   PublishedSource:string;
+  Status:{
+    Title:string
+  }; 
+  Author:{
+    Title:string
+  };
 }
 
 
@@ -51,29 +58,38 @@ export interface ISPList
 
 export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSuggestionWebPartProps> {
   items: any;
-  //private siteurl=this.context.pageContext.site.absoluteUrl;
+  
+  
   private Listname: string = "SuggestionsBox";
+  private LogsListname: string = "SuggestionsBoxWorkflowLogs";
 
-  private isinnovateteamMember:boolean=this._checkUserInGroup("InnovationTeam");
-
+  
+  
   
 
   private _checkUserInGroup(strGroup)
   {
 
     let InGroup:boolean = false;
-
-    let grp = sp.web.currentUser.groups.get().then((r: any) => {      
-      r.forEach((grp) =>{
-        if (grp["Title"] == strGroup)
-        {
-          InGroup = true; 
-        }
-        console.log(grp["Title"]);
-      });
-    });
-
-    return InGroup;
+    
+ 
+    //const queryUrl = `${this.context.pageContext.site.absoluteUrl}/_api/web/currentuser/groups`;
+    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/currentuser/groups`, SPHttpClient.configurations.v1)
+      .then(response => {
+        return response.json()
+          .then((items: any): void => {
+            let listItems: ISPList[] = items["value"];
+            listItems.forEach((item: ISPList) => {
+              if(item.Title==strGroup)
+              {
+                isinnovateteamMember=true;
+                
+              }
+            });
+          });
+         
+        });   
+      
   }
   
   private _externalJsUrl: string = "https://tecq8.sharepoint.com/sites/IntranetDev/Style%20Library/TEC/JS/CustomJs.js";
@@ -87,43 +103,58 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     scriptTag.type = "text/javascript";
     document.getElementsByTagName("head")[0].appendChild(scriptTag);
 
-    console.log(`ViewSuggestionWebPart.onInit(): Added script link.`);
-    console.log(`ViewSuggestionWebPart.onInit(): Leaving.`);
     return Promise.resolve<void>();
   }
+  private getLogsByID(){
+    let historybody: string = '';
 
+    $( "#tbl_tb_history" ).empty();                                                                                     //?$select=*,ID,Suggestion_Status/ID,Suggestion_Status/Title&$expand=Suggestion_Status&$filter=ID eq 6
+                                    //https://tecq8.sharepoint.com/sites/IntranetDev/_api/web/lists/getbytitle('SuggestionsBoxWorkflowLogs')/items?$select=ID,Created,Title,Status/Title,SuggestionID/Title&$expand=SuggestionID,Status&$orderby=ID%20desc
+    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.LogsListname}')/items?$select=ID,Created,Title,Status/Title,SuggestionID/Title,Author/Title&$expand=SuggestionID,Author,Status&$filter=Title eq '${vsid}'&$orderby=ID%20desc`, SPHttpClient.configurations.v1)
+      .then(response => {
+        return response.json()
+          .then((items: any): void => {
+            let listItems: ISPList[] = items["value"];
+            listItems.forEach((item: ISPList) => {
+            var logmomentObj = moment(item.CreatedDate);
+            var logformatpubDate=logmomentObj.format('DD-MM-YYYY');
+            var logstatus=item.Status.Title;
+            var logAuthor=item.Author.Title;
+            historybody += `
+            <tr>
+                <td>`+logstatus+`</td>
+                <td>`+logformatpubDate+`</td>
+                <td>`+logAuthor+`</td>
+            </tr>`;
+          });
+          const HistoryBodyContainer: Element = this.domElement.querySelector('#tbl_tb_history');
+          HistoryBodyContainer.innerHTML = historybody;
+         });  
+        });
+  }
   private getMediaByID() {
     let html: string = '<div class="row gray-box"><div class="col-md-12">';
     let InnovateTabhtml: string = '<div class="row gray-box"><div class="col-md-12">';
     let DepartmentTabhtml: string = '<div class="row gray-box"><div class="col-md-12">';
-    //this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items('${vsid}')?$select=Title,Title_Ar,Description,Description_Ar,CreatedDate,Suggestion_Status/Title,Suggestion_Status/Id&$expand=Suggestion_Status`, SPHttpClient.configurations.v1)
-    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items('${vsid}')`, SPHttpClient.configurations.v1)
+    
+                                                                                                      //?$select=*,ID,Suggestion_Status/ID,Suggestion_Status/Title&$expand=Suggestion_Status&$filter=ID eq 6
+    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items?$select=*,ID,Suggestion_Status/ID,Suggestion_Status/Title&$expand=Suggestion_Status&$filter=ID%20eq%20${vsid}`, SPHttpClient.configurations.v1)
       .then(response => {
         return response.json()
           .then((items: any): void => {
-            console.log('items.value: ', items.value);
-            let listItems: ISPList[] = items;
-            console.log('list items: ', listItems);
+            
             var lcid=this.context.pageContext.legacyPageContext['currentCultureLCID'];  
             lang=lcid==13313?"ar":"en";
             //listItems.forEach((item: ISPList) => {
               //if (item.ID === parseInt(vsid)) {
                 var momentObj = moment(items.CreatedDate);
                 var formatpubDate=momentObj.format('DD-MM-YYYY');
-               var mediatitle=lang=="en"?items.Title: items.Title_Ar;
-               var mediadesc=lang=="en"?items.Description: items.Description_Ar;
-               if (this.isinnovateteamMember==false){
-                //$("#Suggestion_Tabs").tabs("disable", 1);
-
-                //.tabs( { disabled: [1, 2] } );
-                //$("#Suggestion_Tabs").addClass('red-btn');
-                console.log(this.isinnovateteamMember);
-               }
-               else{
-                //$("#Suggestion_Tabs").tabs("enable", 1);
-               }
-               var statusid=items.Suggestion_StatusId;
-               if(statusid==9 ){
+               var mediatitle=lang=="en"?items.value[0].Title: items.value[0].Title_Ar;
+               var mediadesc=lang=="en"?items.value[0].Description: items.value[0].Description_Ar;
+               var sugStatus=items.value[0].Suggestion_Status.Title;
+               
+               statusid=items.Suggestion_StatusId;
+               if(statusid==9 || statusid==5){
                   $( "#tab2" ).empty();
                   InnovateTabhtml += `
                           <div class="col-lg-4  mb-2">   
@@ -149,6 +180,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   InnovateTabhtml += '</div></div>';
                   const InnovateTabContainer: Element = this.domElement.querySelector('#tab2');
                   InnovateTabContainer.innerHTML = InnovateTabhtml;
+                  document.getElementById('btn_Submit').addEventListener('click',(e)=>{ e.preventDefault();this.InnovationTeamSubmited($("input[name=language]:checked").val())});    
                }
                else if(statusid==4 || statusid==10){
                   $( "#tab2" ).empty();
@@ -158,12 +190,13 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                             <textarea style="height:auto !important" rows="5" cols="5" id="Innovate_Second_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
                           </div>
                           <div class="col-lg-4  mb-2">   
-                          <button class="red-btn shadow-sm  mt-4" id="btn_Review_Close"> <span>Close</span></button>
+                          <button class="red-btn shadow-sm  mt-4" id="btn_Review_Close" onClick="this.InnovationTeamClosed(); return false;"> <span>Close</span></button>
                           </div>
                   `;
                   InnovateTabhtml += '</div></div>';
                   const InnovateTabContainer: Element = this.domElement.querySelector('#tab2');
                   InnovateTabContainer.innerHTML = InnovateTabhtml;
+                  document.getElementById('btn_Review_Close').addEventListener('click',(e)=>{ e.preventDefault();this.InnovationTeamClosed()});    
                 }
               html += `
                 <div class="col-lg-4  mb-2">   
@@ -176,7 +209,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                 </div>
                 <div class="col-lg-4  mb-2">   
                   <label id="lbl_Status_Header" class="form-label"> Status </label>
-                  <label id="lbl_Status" class="form-label"> : `+formatpubDate+` </label>
+                  <label id="lbl_Status" class="form-label"> : `+sugStatus+` </label>
                 </div>
                  <div class="col-lg-4  mb-2">   
                   <label id="lbl_CreatedDate_Header" class="form-label"> Created Date </label>
@@ -230,6 +263,8 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   
                   <h3 class="tab_drawer_heading" rel="tab2">`+arrLang[lang]['SuggestionBox']['InnovationTeam']+`</h3>
                   <div id="tab2" class="tab_content">
+                      <div class="row gray-box">
+                        <div class="col-md-12">
                           <div class="col-lg-4  mb-2">   
                           <label id="lbl_Title_Header" class="form-label">Department</label>
                           <select name="department" id="sel_Dept" class="form-control" ></select>
@@ -242,10 +277,14 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                           <button class="red-btn shadow-sm  mt-4" id="btn_Assign_Dept"> <span>Assign Department</span></button>
                           <button class="red-btn shadow-sm  mt-4" id="btn_Close"> <span>Close</span></button>
                           </div>
+                        </div>
+                      </div>  
                   </div>
                   
                   <h3 class="tab_drawer_heading" rel="tab3">`+arrLang[lang]['SuggestionBox']['Department']+`</h3>
                   <div id="tab3" class="tab_content">
+                    <div class="row gray-box">
+                      <div class="col-md-12">
                         <div class="col-lg-4  mb-2">   
                           <label id="lbl_Attach_Header" class="form-label">Attachment</label>
                           <input type="file" multiple="true" className="form-control" id="file"/>
@@ -258,9 +297,13 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                           <button class="red-btn shadow-sm  mt-4" id="btn_Approve"> <span>Require Approval</span></button>
                           <button class="red-btn shadow-sm  mt-4" id="btn_Reject"> <span>Reject</span></button>
                         </div>
+                      </div>
+                    </div>
                   </div>
                   <h3 class="tab_drawer_heading" rel="tab4">`+arrLang[lang]['SuggestionBox']['Department']+`</h3>
                   <div id="tab4" class="tab_content">
+                    <div class="row gray-box">
+                      <div class="col-md-12">
                         <div class="col-lg-4  mb-2">   
                           <label id="lbl_Exist_Attach_Header" class="form-label">Existing Attachment</label>
                           <a href="#">Attachment Links</a>
@@ -273,17 +316,47 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                           <button class="red-btn shadow-sm  mt-4" id="btn_Dept_Head_Approve"> <span>Aprpove</span></button>
                           <button class="red-btn shadow-sm  mt-4" id="btn_Dept_Head_Reject"> <span>Reject</span></button>
                         </div>
+                      </div>
+                    </div>  
                   </div>
                 </div> 
             </div>
          </section>
+         <h2 style="margin-left: 20px;">History</h2>
+         <div class="container-fluid">
+            
+                          <table class="table table-bordered table-hover footable">
+                            <thead>
+                                <tr>
+                                  <th data-breakpoints="xs">Status</th>
+                                  <th data-breakpoints="xs">Action Date</th>
+                                  <th data-breakpoints="xs">Approved By</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl_tb_history">
+                            </tbody>
+                          </table>
+                   
+           </div>
     `;
 
       //this.Localization();
-      
+      this._checkUserInGroup("InnovationTeam");
       this.getMediaByID();
       this.LoadDepartments();
       this.setButtonsEventHandlers();
+      this.getLogsByID();
+      if (isinnovateteamMember==false){
+        $('#tab2').hide();
+        $('#Suggestion_Tabs ul > li:eq(1)').hide();
+        console.log(isinnovateteamMember);
+       }
+       else{
+        $('#Suggestion_Tabs ul > li:eq(1)').show();
+        $('#tab2').show();
+        console.log(isinnovateteamMember);
+       }
+  
   }
 
   private setButtonsEventHandlers(): void {
@@ -319,17 +392,35 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       webPart.DepartmentHeadReject();
      });
      //btn_Review_Close
+     if(statusid==9 ){
+      this.domElement.querySelector('#btn_Submit').addEventListener('click', (e) => { 
+        e.preventDefault();
+        webPart.InnovationTeamSubmited($("input[name=language]:checked").val());
+       });
+     }
+     else if(statusid==4 || statusid==10){
+       this.domElement.querySelector('#btn_Review_Close').addEventListener('click', (e) => { 
+        e.preventDefault();
+        webPart.InnovationTeamClosed();
+       });
+     }
      /*
-     this.domElement.querySelector('#btn_Review_Close').addEventListener('click', (e) => { 
-      e.preventDefault();
-      webPart.InnovationTeamClosed();
-     });
+     
 
-     this.domElement.querySelector('#btn_Submit').addEventListener('click', (e) => { 
-      e.preventDefault();
-      webPart.InnovationTeamSubmited($("input[name=language]:checked").val());
-     });
+     
      */
+  }
+
+  private updateLogs(itemid,stsid) {
+    sp.site.rootWeb.lists.getByTitle("SuggestionsBoxWorkflowLogs").items.add({
+      Title:  itemid,
+      SuggestionIDId: itemid,
+      StatusId:stsid,
+    }).then(r=>{
+      console.log("added data to history list");
+    }).catch(function(err) {  
+      console.log(err);  
+    });
   }
 
   private Localization(): void {
@@ -352,20 +443,27 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     sp.site.rootWeb.lists.getByTitle(this.Listname).items.getById(vsid).update({
       Innovation_Team_Review: $("#Innovate_Second_Comments").val(),
       Suggestion_StatusId: 6,
-    });
-    alert("Suggestion Updated Successfully");
-    window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
-
+    }).then(r=>{
+      this.updateLogs(vsid,6);
+      alert("Suggestion Updated Successfully");
+      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+    }).catch(function(err) {  
+      console.log(err);  
+   });
+    
   }
 
   private InnovationTeamSubmited(stsid){
     sp.site.rootWeb.lists.getByTitle(this.Listname).items.getById(vsid).update({
       Innovation_Team_Review: $("#Innovate_Second_Comments").val(),
       Suggestion_StatusId: stsid,
-    });
-    alert("Suggestion Updated Successfully");
-    window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
-
+    }).then(r=>{
+      this.updateLogs(vsid,stsid);
+      alert("Suggestion Updated Successfully");
+      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+    }).catch(function(err) {  
+      console.log(err);  
+   });
   }
 
   private UpdateInnovationReview(){
@@ -373,10 +471,13 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       AssignedDepartmentId: $("#sel_Dept").val(),
       Innovation_Team_Review: $("#Innovate_First_Comments").val(),
       Suggestion_StatusId: 2,
-    });
-    alert("Suggestion Updated Successfully");
-    window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
-    
+    }).then(r=>{
+      this.updateLogs(vsid,2);
+      alert("Suggestion Updated Successfully");
+      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+    }).catch(function(err) {  
+      console.log(err);  
+   });
   }
 
   private DepartmentApprove(){
@@ -384,9 +485,9 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Assigned_Dept_Comments: $("#txt_Department_Comments").val(),
       Suggestion_StatusId: 3,
     }).then(r=>{
+      this.updateLogs(vsid,3);
       alert("Suggestion Approved Successfully");
       window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
-
     }).catch(function(err) {  
       console.log(err);  
     });
@@ -397,6 +498,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Assigned_Dept_Comments: $("#txt_Department_Comments").val(),
       Suggestion_StatusId:4,
     }).then(r=>{
+      this.updateLogs(vsid,4);
       alert("Suggestion Rejected Successfully");
       window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
 
@@ -410,6 +512,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Dept_Head_Comments: $("#txt_Department_Head_Comments").val(),
       Suggestion_StatusId: 9,
     }).then(r=>{
+      this.updateLogs(vsid,9);
       alert("Suggestion Approved Successfully");
       window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
 
@@ -423,6 +526,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Dept_Head_Comments: $("#txt_Department_Head_Comments").val(),
       Suggestion_StatusId: 10,
     }).then(r=>{
+      this.updateLogs(vsid,10);
       alert("Suggestion Rejected Successfully");
       window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
 
@@ -461,10 +565,14 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       AssignedDepartmentId: $("#sel_Dept").val(),
       Innovation_Team_Review: $("#Innovate_First_Comments").val(),
       Suggestion_StatusId: 6,
-    });
-    alert("Suggestion Closed Successfully");
-    window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+    }).then(r=>{
+      this.updateLogs(vsid,6);
+      alert("Suggestion Closed Successfully");
+      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
 
+    }).catch(function(err) {  
+      console.log(err);  
+    });
   }
   /*
   private getIsCurrentUserInGroup(userId,groupName)

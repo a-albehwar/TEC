@@ -124,6 +124,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
               Suggestion_StatusId: 1,
             }).then(r=>{
               r.item.attachmentFiles.addMultiple(fileInfos);
+              this.updateLogs(r.data.Id);
               alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
               window.location.href=this.props.weburl;
             }).catch(function(err) {  
@@ -139,6 +140,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
               Suggestion_StatusId: 1,
             }).then(r=>{
               r.item.attachmentFiles.addMultiple(fileInfos);
+              this.updateLogs(r.data.Id);
               alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
               window.location.href=this.props.weburl;
             }).catch(function(err) {  
@@ -154,4 +156,16 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
     event.preventDefault();
     return false;
   }
+  private updateLogs(item) {
+      sp.site.rootWeb.lists.getByTitle("SuggestionsBoxWorkflowLogs").items.add({
+        Title:  item,
+        SuggestionIDId: 1,
+        StatusId:1,
+      }).then(r=>{
+        console.log("added data to history list");
+      }).catch(function(err) {  
+        console.log(err);  
+    });
+  }
+
 }

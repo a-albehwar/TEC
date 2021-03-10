@@ -70,7 +70,7 @@ export default class SuggestionsGrid extends React.Component<ISuggestionsGridPro
     
    //?$select=ID,WorkType,ApplyLink,ExpireDate,Title,LK_Departments/ID,LK_Departments/Title&$expand=LK_Departments
     const queryParam = `%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$top=${this.state.pageSize}`;
-    var url = `${this.props.siteurl}/_api/web/lists/GetByTitle('SuggestionsBox')/items?`+ queryParam+``;
+    var url = `${this.props.siteurl}/_api/web/lists/GetByTitle('SuggestionsBox')/items?$select=*,Suggestion_Status/Title&$expand=Suggestion_Status&`+ queryParam+``;
     this.readItems(url);    //&$select=ID,Title,Title_Ar,Description,Description_Ar,Suggestion_StatusTitle/Suggestion_Status&$expand=Suggestion_Status
   }
   
@@ -161,7 +161,6 @@ export default class SuggestionsGrid extends React.Component<ISuggestionsGridPro
                             <tr>
                                 <td>{Sugtitle}</td>
                                 <td>{SugDescstr}</td>
-                               
                                 <td>{formatCreatedDate}</td>
                                 <td>
                                 <a href={viewurl}><img src={viewimgurl} className={"img-fluid"}/></a>
@@ -180,7 +179,7 @@ export default class SuggestionsGrid extends React.Component<ISuggestionsGridPro
 
                             totalPages={this.state.totalPages} 
                             onChange={(page) => this._getPage(page)}
-                            limiter={3} // Optional - default value 3
+                            limiter={this.state.totalPages} // Optional - default value 3
                             hideFirstPageJump={false} // Optional
                             hideLastPageJump={false} // Optional
                             limiterIcon={"Emoji12"} // Optional

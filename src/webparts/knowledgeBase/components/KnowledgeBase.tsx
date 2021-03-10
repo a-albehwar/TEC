@@ -73,7 +73,7 @@ export default class KnowledgeBase extends React.Component<IKnowledgeBaseProps, 
     
    //?$select=ID,WorkType,ApplyLink,ExpireDate,Title,LK_Departments/ID,LK_Departments/Title&$expand=LK_Departments
     const queryParam = `%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$top=${this.state.pageSize}`;
-    var url = `${this.props.siteurl}/_api/web/lists/GetByTitle('KnowledgeBase')/items?`+ queryParam;
+    var url = `${this.props.siteurl}/_api/web/lists/GetByTitle('KnowledgeBase')/items`+ queryParam;
     this.readItems(url);    
   }
 
