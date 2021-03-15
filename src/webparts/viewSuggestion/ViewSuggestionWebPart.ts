@@ -44,6 +44,7 @@ export interface ISPList
   PublishedDate:Date;
   ID:number;
   Description:string;
+  Comments:string;
   Description_Ar:string;
   Created:string;
   PublishedSource:string;
@@ -112,7 +113,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
 
     $( "#tbl_tb_history" ).empty();                                                                                     //?$select=*,ID,Suggestion_Status/ID,Suggestion_Status/Title&$expand=Suggestion_Status&$filter=ID eq 6
                                     //https://tecq8.sharepoint.com/sites/IntranetDev/_api/web/lists/getbytitle('SuggestionsBoxWorkflowLogs')/items?$select=ID,Created,Title,Status/Title,SuggestionID/Title&$expand=SuggestionID,Status&$orderby=ID%20desc
-    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.LogsListname}')/items?$select=ID,Created,Title,Status/Title,SuggestionID/Title,Author/Title&$expand=SuggestionID,Author,Status&$filter=Title eq '${vsid}'&$orderby=ID%20desc`, SPHttpClient.configurations.v1)
+    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.LogsListname}')/items?$select=ID,Comments,Created,Title,Status/Title,SuggestionID/Title,Author/Title&$expand=SuggestionID,Author,Status&$filter=Title eq '${vsid}'&$orderby=ID%20desc`, SPHttpClient.configurations.v1)
       .then(response => {
         return response.json()
           .then((items: any): void => {
@@ -122,9 +123,11 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
             var logformatpubDate=logmomentObj.format('DD-MM-YYYY');
             var logstatus=item.Status.Title;
             var logAuthor=item.Author.Title;
+            var logComments=item.Comments!=undefined?item.Comments:"";
             historybody += `
             <tr>
                 <td>`+logstatus+`</td>
+                <td>`+logComments+`</td>
                 <td>`+logformatpubDate+`</td>
                 <td>`+logAuthor+`</td>
             </tr>`;
@@ -138,7 +141,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     let html: string = '<div class="row gray-box"><div class="col-md-12">';
     let InnovateTabhtml: string = '<div class="row gray-box"><div class="col-md-12">';
     let DepartmentTabhtml: string = '<div class="row gray-box"><div class="col-md-12">';
-    let anchorhtml:string='';
+    let anchorhtml: string ='';
     
                                                                                                       //?$select=*,ID,Suggestion_Status/ID,Suggestion_Status/Title&$expand=Suggestion_Status&$filter=ID eq 6
     this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items?$select=*,ID,Suggestion_Status/ID,Attachments,AttachmentFiles,Suggestion_Status/Title&$expand=Suggestion_Status,AttachmentFiles&$filter=ID%20eq%20${vsid}`, SPHttpClient.configurations.v1)
@@ -150,16 +153,16 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
             lang=lcid==13313?"ar":"en";
             //listItems.forEach((item: ISPList) => {
               //if (item.ID === parseInt(vsid)) {
-                var momentObj = moment(items.Created);
+                var momentObj = moment(items.value[0].Created);
                 var formatpubDate=momentObj.format('DD-MM-YYYY');
                var mediatitle=lang=="en"?items.Title: items.Title_Ar;
                var mediadesc=lang=="en"?items.Description: items.Description_Ar;
                var sugStatus=items.value[0].Suggestion_Status.Title;
                if(items.value[0].AttachmentFiles.length>0){
                 for(var i=0;i<items.value[0].AttachmentFiles.length;i++){
-                 anchorhtml +='<a href="'+items.value[0].AttachmentFiles.FileName+'">'+items.value[0].AttachmentFiles.FileName+'</a>';
-                 //alert(anchorhtml);
-
+                  var anchorfileURL=this.context.pageContext.site.absoluteUrl+"/Lists/SuggestionsBox/Attachments/"+vsid+"/"+items.value[0].AttachmentFiles[i].FileNameAsPath.DecodedUrl+"?web=1";
+                  console.log(anchorfileURL);
+                  anchorhtml+='<a href="'+anchorfileURL+'">'+items.value[0].AttachmentFiles[i].FileName+'</a><br>';
                  /*var a = document.createElement('a');
                  a.target = '_blank';
                  a.href = items.value[0].AttachmentFiles[i].ServerRelativeUrl;
@@ -175,10 +178,10 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                if(statusid==9 || statusid==5){
                   $( "#tab2" ).empty();
                   InnovateTabhtml += `
-                          <div class="col-lg-4  mb-2">   
+                          <div class="col-lg-12  mb-2">   
                           <label id="lbl_Status_Header" class="form-label">Status</label>
                           </div>  
-                          <div class="col-lg-4 mb-2 vleft">
+                          <div class="col-lg-12 mb-2 vleft">
                             <input type="radio" id="rb_arabic" name="language" class="form-control" value="8">
                             <label for="arabic" id="lbl_rb_Arabic" class="form-label">Standby</label><br>
                             <input type="radio" id="rb_english" name="language" class="form-control" value="5">
@@ -187,7 +190,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                             <label for="english"  id="lbl_rb_English" class="form-label">Completed</label><br>
                             <label id="lbl_Langerr" class="form-label" style="color:red"></label>
                           </div>
-                          <div class="col-lg-4  mb-2">   
+                          <div class="col-lg-12 mb-2">   
                             <label id="lbl_Innovation_Second_Header" class="form-label"> Comments </label>
                             <textarea style="height:auto !important" rows="5" cols="5" id="Innovate_Second_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
                           </div>
@@ -203,7 +206,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                else if(statusid==4 || statusid==10){
                   $( "#tab2" ).empty();
                   InnovateTabhtml += `
-                          <div class="col-lg-4  mb-2">   
+                          <div class="col-lg-12  mb-2">   
                             <label id="lbl_Innovation_Second_Header" class="form-label"> Comments </label>
                             <textarea style="height:auto !important" rows="5" cols="5" id="Innovate_Second_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
                           </div>
@@ -217,23 +220,23 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   document.getElementById('btn_Review_Close').addEventListener('click',(e)=>{ e.preventDefault();this.InnovationTeamClosed()});    
                 }
               html += `
-                <div class="col-lg-4  mb-2">   
+                <div class="col-lg-12 mb-2">   
                   <label id="lbl_Title_Header" class="form-label">Title</label>
                   <label id="lbl_Title" class="form-label"> : `+mediatitle+` </label>
                 </div>  
-                <div class="col-lg-4  mb-2">   
+                <div class="col-lg-12 mb-2">   
                   <label id="lbl_Suggestion_Header" class="form-label"> Suggestion </label>
                   <label id="lbl_Suggestion" class="form-label"> : `+mediadesc+`</label>
                 </div>
-                <div class="col-lg-4  mb-2">   
+                <div class="col-lg-12 mb-2">   
                   <label id="lbl_Status_Header" class="form-label"> Status </label>
                   <label id="lbl_Status" class="form-label"> : `+sugStatus+` </label>
                 </div>
-                 <div class="col-lg-4  mb-2">   
+                 <div class="col-lg-12 mb-2">   
                   <label id="lbl_CreatedDate_Header" class="form-label"> Created Date </label>
                   <label id="lbl_CreatedDate" class="form-label"> : `+formatpubDate+`</label>
                 </div>
-                <div class="col-lg-4  mb-2">   
+                <div class="col-lg-12 mb-2">   
                   <label id="lbl_Attach_Header" class="form-label"> Attachments</label>
                   <div id="anchorcontainer"> `+anchorhtml+`</div
                 </div>
@@ -283,15 +286,15 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   <div id="tab2" class="tab_content">
                       <div class="row gray-box">
                         <div class="col-md-12">
-                          <div class="col-lg-4  mb-2">   
+                          <div class="col-lg-4 mb-2">   
                           <label id="lbl_Title_Header" class="form-label">Department</label>
                           <select name="department" id="sel_Dept" class="form-control" ></select>
                           </div>  
-                          <div class="col-lg-4  mb-2">   
+                          <div class="col-lg-12 mb-2">   
                             <label id="lbl_Suggestion_Header" class="form-label"> Comments </label>
                             <textarea style="height:auto !important" rows="5" cols="5" id="Innovate_First_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
                           </div>
-                          <div class="col-lg-4  mb-2">   
+                          <div class="col-lg-4 mb-2">   
                           <button class="red-btn shadow-sm  mt-4" id="btn_Assign_Dept"> <span>Assign Department</span></button>
                           <button class="red-btn shadow-sm  mt-4" id="btn_Close"> <span>Close</span></button>
                           </div>
@@ -303,15 +306,15 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   <div id="tab3" class="tab_content">
                     <div class="row gray-box">
                       <div class="col-md-12">
-                        <div class="col-lg-4  mb-2">   
+                        <div class="col-lg-12 mb-2">   
                           <label id="lbl_Attach_Header" class="form-label">Attachment</label>
                           <input type="file" multiple="true" className="form-control" id="file"/>
                         </div>  
-                        <div class="col-lg-4  mb-2">   
+                        <div class="col-lg-12 mb-2">   
                           <label id="lbl_Comments_Header" class="form-label"> Comments </label>
                           <textarea style="height:auto !important" rows="5" cols="5" id="txt_Department_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
                         </div>
-                        <div class="col-lg-4  mb-2">   
+                        <div class="col-lg-4 mb-2">   
                           <button class="red-btn shadow-sm  mt-4" id="btn_Approve"> <span>Require Approval</span></button>
                           <button class="red-btn shadow-sm  mt-4" id="btn_Reject"> <span>Reject</span></button>
                         </div>
@@ -322,11 +325,11 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   <div id="tab4" class="tab_content">
                     <div class="row gray-box">
                       <div class="col-md-12">
-                        <div class="col-lg-4  mb-2">   
+                        <div class="col-lg-12 mb-2">   
                           <label id="lbl_Exist_Attach_Header" class="form-label">Existing Attachment</label>
                           <a href="#">Attachment Links</a>
                         </div>
-                        <div class="col-lg-4  mb-2">   
+                        <div class="col-lg-12 mb-2">   
                           <label id="lbl_Dept_Head_Comments_Header" class="form-label"> Comments </label>
                           <textarea style="height:auto !important" rows="5" cols="5" id="txt_Department_Head_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
                         </div>
@@ -347,6 +350,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                             <thead>
                                 <tr>
                                   <th data-breakpoints="xs">Status</th>
+                                  <th data-breakpoints="xs">Comments</th>
                                   <th data-breakpoints="xs">Action Date</th>
                                   <th data-breakpoints="xs">Approved By</th>
                                 </tr>
@@ -429,11 +433,12 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
      */
   }
 
-  private updateLogs(itemid,stsid) {
+  private updateLogs(itemid,stsid,stsComments) {
     sp.site.rootWeb.lists.getByTitle("SuggestionsBoxWorkflowLogs").items.add({
       Title:  itemid,
       SuggestionIDId: itemid,
       StatusId:stsid,
+      Comments:stsComments,
     }).then(r=>{
       console.log("added data to history list");
     }).catch(function(err) {  
@@ -462,7 +467,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Innovation_Team_Review: $("#Innovate_Second_Comments").val(),
       Suggestion_StatusId: 6,
     }).then(r=>{
-      this.updateLogs(vsid,6);
+      this.updateLogs(vsid,6,$("#Innovate_Second_Comments").val());
       alert("Suggestion Updated Successfully");
       window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
     }).catch(function(err) {  
@@ -476,7 +481,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Innovation_Team_Review: $("#Innovate_Second_Comments").val(),
       Suggestion_StatusId: stsid,
     }).then(r=>{
-      this.updateLogs(vsid,stsid);
+      this.updateLogs(vsid,stsid,$("#Innovate_Second_Comments").val());
       alert("Suggestion Updated Successfully");
       window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
     }).catch(function(err) {  
@@ -490,7 +495,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Innovation_Team_Review: $("#Innovate_First_Comments").val(),
       Suggestion_StatusId: 2,
     }).then(r=>{
-      this.updateLogs(vsid,2);
+      this.updateLogs(vsid,2,$("#Innovate_First_Comments").val());
       alert("Suggestion Updated Successfully");
       window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
     }).catch(function(err) {  
@@ -503,7 +508,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Assigned_Dept_Comments: $("#txt_Department_Comments").val(),
       Suggestion_StatusId: 3,
     }).then(r=>{
-      this.updateLogs(vsid,3);
+      this.updateLogs(vsid,3,$("#txt_Department_Comments").val());
       alert("Suggestion Approved Successfully");
       window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
     }).catch(function(err) {  
@@ -516,7 +521,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Assigned_Dept_Comments: $("#txt_Department_Comments").val(),
       Suggestion_StatusId:4,
     }).then(r=>{
-      this.updateLogs(vsid,4);
+      this.updateLogs(vsid,4,$("#txt_Department_Comments").val());
       alert("Suggestion Rejected Successfully");
       window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
 
@@ -530,7 +535,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Dept_Head_Comments: $("#txt_Department_Head_Comments").val(),
       Suggestion_StatusId: 9,
     }).then(r=>{
-      this.updateLogs(vsid,9);
+      this.updateLogs(vsid,9,$("#txt_Department_Head_Comments").val());
       alert("Suggestion Approved Successfully");
       window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
 
@@ -544,7 +549,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Dept_Head_Comments: $("#txt_Department_Head_Comments").val(),
       Suggestion_StatusId: 10,
     }).then(r=>{
-      this.updateLogs(vsid,10);
+      this.updateLogs(vsid,10, $("#txt_Department_Head_Comments").val());
       alert("Suggestion Rejected Successfully");
       window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
 
@@ -584,7 +589,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Innovation_Team_Review: $("#Innovate_First_Comments").val(),
       Suggestion_StatusId: 6,
     }).then(r=>{
-      this.updateLogs(vsid,6);
+      this.updateLogs(vsid,6,$("#Innovate_First_Comments").val());
       alert("Suggestion Closed Successfully");
       window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
 

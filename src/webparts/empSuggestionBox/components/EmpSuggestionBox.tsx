@@ -9,7 +9,9 @@ declare var lang:string;
 const errormsgStyle = {
   color: 'red',
 };
-
+const displayStyle = {
+  display: 'none',
+};
 export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxProps, any> {
   private language:string;
  
@@ -19,7 +21,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
       fileInfos: null,
     };
   }
-
+ 
   public render(): React.ReactElement<IEmpSuggestionBoxProps> {
     var weburl=this.props.weburl;
     var langcode=this.props.pagecultureId;
@@ -27,7 +29,25 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
     return (
       
         <div>
-            <div className={"col-lg-4  mb-2"}>  
+            <div className={"col-lg-4  mb-2"}>
+                <label id="lbl_Sug_Type" className={"form-label"}>{arrLang[lang]['SuggestionBox']['SugType']}<span  style={errormsgStyle}>*</span></label>
+            </div>
+            <div className="col-lg-12 mb-2 vleft">
+                <input type="radio" id="rb_money" name="suggestionType" className={"form-control"} value="Save Money" onChange={this.handleradioClick}></input>
+                <label  id="lbl_money" className={"form-label"}>{arrLang[lang]['SuggestionBox']['SaveMoney']}</label>
+                <input type="radio" id="rb_security" name="suggestionType" className={"form-control"} value="Improve Safety" onChange={this.handleradioClick}></input>
+                <label   id="lbl_security" className={"form-label"}>{arrLang[lang]['SuggestionBox']['ImproveSecurity']}</label><br></br>
+                <input type="radio" id="rb_efficency" name="suggestionType" className={"form-control"} value="Improve Efficiency" onChange={this.handleradioClick}></input>
+                <label id="lbl_Efficency" className={"form-label"}>{arrLang[lang]['SuggestionBox']['ImporveEfficiency']}</label>
+                <input type="radio" id="rb_other" name="suggestionType" className={"form-control"} value="Other" onChange={this.handleradioClick}></input>
+                <label id="lbl_Other" className={"form-label"}>{arrLang[lang]['SuggestionBox']['Other']}</label><br></br>              
+                <label id="lbl_SugTypeerr" className={"form-label"}  style={errormsgStyle}></label>
+            </div>
+            <div id='div_other' className={"col-lg-4  mb-2"} style={displayStyle}>
+              <label id="lbl_Other" className={"form-label"}>{arrLang[lang]['SuggestionBox']['Other']}</label>                 
+              <input type="text" id="txt_other" className={"form-control"} name="other" placeholder={arrLang[lang]['SuggestionBox']['Other']}/>
+            </div>
+           <div className={"col-lg-4  mb-2"}>  
                <label id="lblTitle" className={"form-label"}> {arrLang[lang]['SuggestionBox']['Title']} <span style={errormsgStyle}>*</span></label>
                <input type="text" id="idTitle" className={"form-control"} name="Title" placeholder={arrLang[lang]['SuggestionBox']['Title']} />
                <label id="lbl_subjecterr" className={"form-label"}  style={errormsgStyle}></label>
@@ -38,9 +58,9 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
                 <label id="lbl_suggestionerr" className={"form-label"} style={errormsgStyle}></label>
             </div>
             <div className={"col-lg-4  mb-2"}>
-                <label id="lblattach" className={"form-label"}>{arrLang[lang]['SuggestionBox']['Attachment']}<span  style={errormsgStyle}>*</span></label>
+                <label id="lblattach" className={"form-label"}>{arrLang[lang]['SuggestionBox']['Attachment']}</label>
                 <input type="file" multiple={true} className={"form-control"} id="file" onChange={this.addFile.bind(this)} />
-                <label id="lbl_attachmenterr" className={"form-label"}  style={errormsgStyle}></label>
+               
             </div>
             <div className="col-lg-4">
               
@@ -56,6 +76,21 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
     
   }
   
+  private handleradioClick(myRadio)
+  {
+    var selectedValue = myRadio.target.value;
+        if(selectedValue=="Other")
+        {
+        document.getElementById("div_other").style.display = 'block';
+        //Show textbox
+        }
+        else
+        {
+        document.getElementById("div_other").style.display = 'none';
+        //Hide textbox.
+        }
+    }
+
   private _validateSubject(value: string): string {
     if (value.length <= 0) {
       return arrLang[lang]['SuggestionBox']['SugTitleError'];
@@ -102,19 +137,28 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
   private upload(event) {
     var sug_title=$("#idTitle").val();
     var sug_Desc=$("#idSuggestion").val();
-    
-    
+    var sug_Type= $('input[name="suggestionType"]:checked').val();
+    //alert(sug_Type);
     $("#lbl_subjecterr").empty();
     document.getElementById('lbl_subjecterr').append(this._validateSubject( sug_title));
     $("#lbl_suggestionerr").empty();
     document.getElementById('lbl_suggestionerr').append(this._validateDescription(sug_Desc));
-    $("#lbl_attachmenterr").empty();
-    if(this.state.fileInfos==null || this.state.fileInfos==undefined )
+    $("#lbl_SugTypeerr").empty();
+
+    if(sug_Type==null || sug_Type=="" || sug_Type==undefined)
     {
-      document.getElementById('lbl_attachmenterr').append(arrLang[lang]['SuggestionBox']['AttachError']);
+      document.getElementById('lbl_SugTypeerr').append(arrLang[lang]['SuggestionBox']['SugTypeError']);
+    }
+    else if(sug_Type="Other"){
+      if($("#txt_other").val()==""){
+        document.getElementById('lbl_SugTypeerr').append(arrLang[lang]['SuggestionBox']['SugTypeError']);
+      }
+      else{
+      sug_Type=$("#txt_other").val();
+      }
     }
     
-    if(sug_title !="" && sug_Desc !="" && this.state.fileInfos!=null && this.state.fileInfos!=undefined ){
+    if(sug_title !="" && sug_Desc !="" && sug_Type!=""){
 
       let {fileInfos}=this.state;
        if(lang=="en"){
@@ -122,6 +166,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
               Title:  sug_title,
               Description:sug_Desc,
               Suggestion_StatusId: 1,
+              Suggestion_Type:sug_Type,
             }).then(r=>{
               r.item.attachmentFiles.addMultiple(fileInfos);
               this.updateLogs(r.data.Id);
