@@ -45,7 +45,7 @@ export interface ISPList
   ID:number;
   Description:string;
   Description_Ar:string;
-  CreatedDate:string;
+  Created:string;
   PublishedSource:string;
   Status:{
     Title:string
@@ -118,7 +118,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
           .then((items: any): void => {
             let listItems: ISPList[] = items["value"];
             listItems.forEach((item: ISPList) => {
-            var logmomentObj = moment(item.CreatedDate);
+            var logmomentObj = moment(item.Created);
             var logformatpubDate=logmomentObj.format('DD-MM-YYYY');
             var logstatus=item.Status.Title;
             var logAuthor=item.Author.Title;
@@ -138,7 +138,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     let html: string = '<div class="row gray-box"><div class="col-md-12">';
     let InnovateTabhtml: string = '<div class="row gray-box"><div class="col-md-12">';
     let DepartmentTabhtml: string = '<div class="row gray-box"><div class="col-md-12">';
-    var anchorhtml;
+    let anchorhtml: string ='';
     
                                                                                                       //?$select=*,ID,Suggestion_Status/ID,Suggestion_Status/Title&$expand=Suggestion_Status&$filter=ID eq 6
     this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items?$select=*,ID,Suggestion_Status/ID,Attachments,AttachmentFiles,Suggestion_Status/Title&$expand=Suggestion_Status,AttachmentFiles&$filter=ID%20eq%20${vsid}`, SPHttpClient.configurations.v1)
@@ -150,14 +150,16 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
             lang=lcid==13313?"ar":"en";
             //listItems.forEach((item: ISPList) => {
               //if (item.ID === parseInt(vsid)) {
-                var momentObj = moment(items.CreatedDate);
+                var momentObj = moment(items.value[0].Created);
                 var formatpubDate=momentObj.format('DD-MM-YYYY');
                var mediatitle=lang=="en"?items.value[0].Title: items.value[0].Title_Ar;
                var mediadesc=lang=="en"?items.value[0].Description: items.value[0].Description_Ar;
                var sugStatus=items.value[0].Suggestion_Status.Title;
                if(items.value[0].AttachmentFiles.length>0){
                 for(var i=0;i<items.value[0].AttachmentFiles.length;i++){
-                 
+                  var anchorfileURL=this.context.pageContext.site.absoluteUrl+"/Lists/SuggestionsBox/Attachments/"+vsid+"/"+items.value[0].AttachmentFiles[i].FileNameAsPath.DecodedUrl+"?web=1";
+                  console.log(anchorfileURL);
+                  anchorhtml+='<a href="'+anchorfileURL+'">'+items.value[0].AttachmentFiles[i].FileName+'</a><br>';
                  /*var a = document.createElement('a');
                  a.target = '_blank';
                  a.href = items.value[0].AttachmentFiles[i].ServerRelativeUrl;
@@ -233,7 +235,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                 </div>
                 <div class="col-lg-4  mb-2">   
                   <label id="lbl_Attach_Header" class="form-label"> Attachments</label>
-                  <div id="anchorcontainer"></div
+                  <div id="anchorcontainer"> `+anchorhtml+`</div
                 </div>
               `;
                
