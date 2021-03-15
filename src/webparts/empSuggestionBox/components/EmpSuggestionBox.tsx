@@ -2,8 +2,10 @@ import * as React from 'react';
 import styles from './EmpSuggestionBox.module.scss';
 import { IEmpSuggestionBoxProps } from './IEmpSuggestionBoxProps';
 
-import { sp} from "@pnp/sp/presets/all";
-
+import { sp } from "@pnp/sp/presets/all";
+//import {ItemAddResult } from "@pnp/sp";
+import { Item } from '@pnp/sp-commonjs';
+import {  SPHttpClient ,SPHttpClientResponse } from '@microsoft/sp-http';
 declare var arrLang: any;
 declare var lang:string;
 const errormsgStyle = {
@@ -12,6 +14,11 @@ const errormsgStyle = {
 const displayStyle = {
   display: 'none',
 };
+
+export interface IListItem {  
+  Title?: string;  
+  Id: number;  
+}  
 export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxProps, any> {
   private language:string;
  
@@ -149,7 +156,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
     {
       document.getElementById('lbl_SugTypeerr').append(arrLang[lang]['SuggestionBox']['SugTypeError']);
     }
-    else if(sug_Type="Other"){
+    else if(sug_Type=="Other"){
       if($("#txt_other").val()==""){
         document.getElementById('lbl_SugTypeerr').append(arrLang[lang]['SuggestionBox']['SugTypeError']);
       }
@@ -202,15 +209,37 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
     return false;
   }
   private updateLogs(item) {
-      sp.site.rootWeb.lists.getByTitle("SuggestionsBoxWorkflowLogs").items.add({
-        Title:  item,
-        SuggestionIDId: 1,
-        StatusId:1,
-      }).then(r=>{
-        console.log("added data to history list");
-      }).catch(function(err) {  
-        console.log(err);  
+    sp.web.lists.getByTitle("SuggestionsBoxWorkflowLogs").items.add({
+      Title: item,
+    }).then((iar) => {
+      console.log(iar);
     });
   }
+  private createItem(item): void {  
+    const body: string = JSON.stringify({  
+      'Title': `${item}`, 
+      'SuggestionIDId':`${item}`,
+      'StatusId':1, 
+    });  
+    
+    this.context.spHttpClient.post(`${this.context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('SuggestionsBoxWorkflowLogs')/items`,  
+    SPHttpClient.configurations.v1,  
+    {  
+      headers: {  
+        'Accept': 'application/json;odata=nometadata',  
+        'Content-type': 'application/json;odata=nometadata',  
+        'odata-version': ''  
+      },  
+      body: body  
+    })  
+    .then((response: SPHttpClientResponse): Promise<IListItem> => {  
+      return response.json();  
+    })  
+    .then((item: IListItem): void => {  
+      console.log(`Item '${item.Title}' (ID: ${item.Id}) successfully created`);  
+    }, (error: any): void => {  
+      console.log('Error while creating the item: ' + error);  
+    });  
+  }  
 
 }
