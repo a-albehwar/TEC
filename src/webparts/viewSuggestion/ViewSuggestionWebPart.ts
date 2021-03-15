@@ -16,6 +16,8 @@ import { Web, IWeb } from "@pnp/sp/webs";
 import "@pnp/sp/site-users/web";
 import { SiteGroups } from '@pnp/sp/site-groups';
 import * as $ from 'jquery';
+
+
  
 export interface IViewSuggestionWebPartProps {
   description: string;
@@ -136,9 +138,10 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     let html: string = '<div class="row gray-box"><div class="col-md-12">';
     let InnovateTabhtml: string = '<div class="row gray-box"><div class="col-md-12">';
     let DepartmentTabhtml: string = '<div class="row gray-box"><div class="col-md-12">';
+    var anchorhtml;
     
                                                                                                       //?$select=*,ID,Suggestion_Status/ID,Suggestion_Status/Title&$expand=Suggestion_Status&$filter=ID eq 6
-    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items?$select=*,ID,Suggestion_Status/ID,Suggestion_Status/Title&$expand=Suggestion_Status&$filter=ID%20eq%20${vsid}`, SPHttpClient.configurations.v1)
+    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items?$select=*,ID,Suggestion_Status/ID,Attachments,AttachmentFiles,Suggestion_Status/Title&$expand=Suggestion_Status,AttachmentFiles&$filter=ID%20eq%20${vsid}`, SPHttpClient.configurations.v1)
       .then(response => {
         return response.json()
           .then((items: any): void => {
@@ -152,7 +155,20 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                var mediatitle=lang=="en"?items.value[0].Title: items.value[0].Title_Ar;
                var mediadesc=lang=="en"?items.value[0].Description: items.value[0].Description_Ar;
                var sugStatus=items.value[0].Suggestion_Status.Title;
-               
+               if(items.value[0].AttachmentFiles.length>0){
+                for(var i=0;i<items.value[0].AttachmentFiles.length;i++){
+                 
+                 /*var a = document.createElement('a');
+                 a.target = '_blank';
+                 a.href = items.value[0].AttachmentFiles[i].ServerRelativeUrl;
+                 a.innerText = items.value[0].AttachmentFiles[i].FileName;
+                
+                 var ancContainer = document.getElementById('anchorcontainer');
+                 ancContainer.appendChild(a);
+                 ancContainer.appendChild(document.createElement('br'));
+                 */
+                }
+               }
                statusid=items.Suggestion_StatusId;
                if(statusid==9 || statusid==5){
                   $( "#tab2" ).empty();
@@ -217,7 +233,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                 </div>
                 <div class="col-lg-4  mb-2">   
                   <label id="lbl_Attach_Header" class="form-label"> Attachments</label>
-                  <a href="#">Attached Files</a>
+                  <div id="anchorcontainer"></div
                 </div>
               `;
                
