@@ -5,9 +5,11 @@ import { escape } from '@microsoft/sp-lodash-subset';
 import { Pagination } from "@pnp/spfx-controls-react/lib/pagination";
 import * as moment from 'moment';
 import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http";
-
+import { sp } from "@pnp/sp/presets/all";
+import "@pnp/sp/items";
 export interface ISuggestionsGridStates{    
   SuggestionBoxList :any[],
+  StatusListArray :any[],
   currentPage:number,
   totalPages:number,
   pageSize:number,
@@ -18,8 +20,11 @@ declare var arrLang: any;
 declare var lang: any;
 declare var surl: any;
 
+
+
 export default class SuggestionsGrid extends React.Component<ISuggestionsGridProps, ISuggestionsGridStates> {
 
+  
   private _getPage(page: number){
     //console.log('Page:', page);
     this.setState({
@@ -33,11 +38,14 @@ export default class SuggestionsGrid extends React.Component<ISuggestionsGridPro
     super(props);    
     this.state ={    
       SuggestionBoxList : [],
+      StatusListArray:[],
       currentPage:1,
       totalPages:0,
-      pageSize:10, // change no of items for page as your requirement
+      pageSize:25, // change no of items for page as your requirement
       itemCount:0,
     }    
+    
+    this.getStatus(`${this.props.siteurl}/_api/web/lists/GetByTitle('LK_Suggestion_Status')/items`);
     this.getListItemsCount(`${this.props.siteurl}/_api/web/lists/GetByTitle('SuggestionsBox')/ItemCount`);
     const queryParam = this.buildQueryParams(props);
     this.readItems(`${this.props.siteurl}/_api/web/lists/GetByTitle('SuggestionsBox')/items${queryParam}`);
@@ -111,16 +119,65 @@ export default class SuggestionsGrid extends React.Component<ISuggestionsGridPro
       });
     });
   }
+  private getStatus(sugstsurl:string){
 
+          this.setState({
+            StatusListArray: [],
+            //totalcounts:Math.round(this.state.itemCount%this.state.pageSize),
+            //status: 'Loading all items...'
+          });
+          
+          this.props.spHttpClient.get(sugstsurl,
+          SPHttpClient.configurations.v1,
+          {
+            headers: {
+              'Accept': 'application/json;odata=nometadata',
+              'odata-version': ''
+            }
+          }).then((response: SPHttpClientResponse): Promise<{value: any[]}> =>{
+          return response.json();
+          }).then((response: {value: any[]}): void => {     
+            
+            this.setState({
+              StatusListArray: response.value,
+              //currentPage:1,
+            });    
+          }, (error: any): void => {
+            this.setState({
+              StatusListArray: [],
+              //status: 'Loading all items failed with error: ' + error
+            });
+          });
+        // get all the items from a list
+        /*this.setState({
+          StatusListArray: [],
+          //totalcounts:Math.round(this.state.itemCount%this.state.pageSize),
+          //status: 'Loading all items...'
+        });
+        
+        sp.site.rootWeb.lists.getByTitle("LK_Suggestion_Status").items.get().then(r=>{
+          //push the elements into the array object
+          //console.log(r.length);
+          
+          for(var i=0;i<r.length;i++){
+            StatusListArray.push(r[i].Title);
+          }
+          
+    }).catch(function(err) {  
+    console.log(err);  
+    });*/
+  }
   public render(): React.ReactElement<ISuggestionsGridProps> {
     var weburl=this.props.weburl;
     var langcode=this.props.pagecultureId;
     lang=langcode=="en-US"?"en":"ar";
     //surl=this.props.siteurl;
     var siteurl=this.props.siteurl;
-    
+   
+   
     //alert(siteurl);
     var viewimgurl=siteurl+"/Style%20Library/TEC/images/view.svg";
+  
     return (
       
       <div className={"container-fluid"}>
@@ -149,11 +206,17 @@ export default class SuggestionsGrid extends React.Component<ISuggestionsGridPro
                         {this.state.SuggestionBoxList.map(function(item,key){
                           
                             //&$select=ID,Title,Title_Ar,Description,Description_Ar,Suggestion_StatusTitle/Suggestion_Status&$expand=Suggestion_Status
-                          var momentObj = moment(item.CreatedDate);
+                          var momentObj = moment(item.Created);
                           var formatCreatedDate=momentObj.format('DD-MM-YYYY');
                           var Sugtitle=langcode=="en-US"?item.Title:item.Title_Ar;
                           var SugDescstr = langcode=="en-US"?item.Description:item.Description_Ar;
-                          var SugStatus = langcode=="en-US"?item.Suggestion_StatusTitle:item.Suggestion_StatusTitle;
+                          var SugStatusid = langcode=="en-US"?item.Suggestion_StatusId:item.Suggestion_StatusId;
+                         /* {this.state.StatusListArray.map(function(statusitem,key){
+                          console.log(st);
+                          })}
+                          var CurrentitemSugStatusTitle=this.state.StatusListArray[SugStatusid-1].Title;
+                          console.log(CurrentitemSugStatusTitle);
+                          */
                           //var KBsplitDesc = KBDescstr.substring(0, 100);
                           var viewurl=weburl+"/Pages/TecPages/EmployeeSuggestions/ViewSuggestion.aspx?vsid="+item.ID;
                           var SugAttachmenturl="";//item.Image.Url;
@@ -191,7 +254,9 @@ export default class SuggestionsGrid extends React.Component<ISuggestionsGridPro
         </div>  
     );
   }
+  private getCurrentitemSuggestionStatus(id){
 
+  }
   private getSearchData(surl) {
     var searchKeyword=$("#idSearchName").val();
    

@@ -54,6 +54,8 @@ export interface ISPList
   Author:{
     Title:string
   };
+  User_JobTitle:string;
+  User_Department:string;
 }
 
 
@@ -144,7 +146,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     let anchorhtml: string ='';
     
                                                                                                       //?$select=*,ID,Suggestion_Status/ID,Suggestion_Status/Title&$expand=Suggestion_Status&$filter=ID eq 6
-    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items?$select=*,ID,Suggestion_Status/ID,Attachments,AttachmentFiles,Suggestion_Status/Title&$expand=Suggestion_Status,AttachmentFiles&$filter=ID%20eq%20${vsid}`, SPHttpClient.configurations.v1)
+    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items?$select=*,ID,Suggestion_Status/ID,Attachments,AttachmentFiles,Suggestion_Status/Title,Author/Title&$expand=Suggestion_Status,AttachmentFiles,Author&$filter=ID%20eq%20${vsid}`, SPHttpClient.configurations.v1)
       .then(response => {
         return response.json()
           .then((items: any): void => {
@@ -155,9 +157,13 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
               //if (item.ID === parseInt(vsid)) {
                 var momentObj = moment(items.value[0].Created);
                 var formatpubDate=momentObj.format('DD-MM-YYYY');
-               var mediatitle=lang=="en"?items.Title: items.Title_Ar;
-               var mediadesc=lang=="en"?items.Description: items.Description_Ar;
+               var mediatitle=lang=="en"?items.value[0].Title: items.value[0].Title_Ar;
+               var mediadesc=lang=="en"?items.value[0].Description: items.value[0].Description_Ar;
                var sugStatus=items.value[0].Suggestion_Status.Title;
+               var sugCreatedBy=items.value[0].Author.Title;
+               var sugUserJobTitle=items.value[0].User_JobTitle;
+               var sugUserDept=items.value[0].User_Department;
+               var sugType=items.value[0].Suggestion_Type;
                if(items.value[0].AttachmentFiles.length>0){
                 for(var i=0;i<items.value[0].AttachmentFiles.length;i++){
                   var anchorfileURL=this.context.pageContext.site.absoluteUrl+"/Lists/SuggestionsBox/Attachments/"+vsid+"/"+items.value[0].AttachmentFiles[i].FileNameAsPath.DecodedUrl+"?web=1";
@@ -220,6 +226,10 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   document.getElementById('btn_Review_Close').addEventListener('click',(e)=>{ e.preventDefault();this.InnovationTeamClosed()});    
                 }
               html += `
+              <div class="col-lg-12 mb-2">   
+              <label id="lbl_Title_Header" class="form-label">Suggestion Type</label>
+              <label id="lbl_Title" class="form-label"> : `+sugType+` </label>
+              </div> 
                 <div class="col-lg-12 mb-2">   
                   <label id="lbl_Title_Header" class="form-label">Title</label>
                   <label id="lbl_Title" class="form-label"> : `+mediatitle+` </label>
@@ -236,6 +246,19 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   <label id="lbl_CreatedDate_Header" class="form-label"> Created Date </label>
                   <label id="lbl_CreatedDate" class="form-label"> : `+formatpubDate+`</label>
                 </div>
+                <div class="col-lg-12 mb-2">   
+                  <label id="lbl_CreatedDate_Header" class="form-label"> Created By </label>
+                  <label id="lbl_CreatedDate" class="form-label"> : `+sugCreatedBy+`</label>
+                </div>
+                <div class="col-lg-12 mb-2">   
+                  <label id="lbl_CreatedDate_Header" class="form-label"> Job Title </label>
+                  <label id="lbl_CreatedDate" class="form-label"> : `+sugUserJobTitle+`</label>
+                </div>
+                <div class="col-lg-12 mb-2">   
+                <label id="lbl_CreatedDate_Header" class="form-label"> Department </label>
+                <label id="lbl_CreatedDate" class="form-label"> : `+sugUserDept+`</label>
+              </div>
+
                 <div class="col-lg-12 mb-2">   
                   <label id="lbl_Attach_Header" class="form-label"> Attachments</label>
                   <div id="anchorcontainer"> `+anchorhtml+`</div
@@ -308,7 +331,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                       <div class="col-md-12">
                         <div class="col-lg-12 mb-2">   
                           <label id="lbl_Attach_Header" class="form-label">Attachment</label>
-                          <input type="file" multiple="true" className="form-control" id="file"/>
+                          <input type="file" multiple="true" className="form-control" id="file" />
                         </div>  
                         <div class="col-lg-12 mb-2">   
                           <label id="lbl_Comments_Header" class="form-label"> Comments </label>
@@ -380,7 +403,8 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
        }
   
   }
-
+  
+   
   private setButtonsEventHandlers(): void {
     const webPart: ViewSuggestionWebPart = this;
     
