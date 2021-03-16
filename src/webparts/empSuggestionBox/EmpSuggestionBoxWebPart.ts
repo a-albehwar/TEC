@@ -25,7 +25,7 @@ export default class EmpSuggestionBoxWebPart extends BaseClientSideWebPart<IEmpS
         siteurl: this.context.pageContext.site.absoluteUrl,
         weburl:this.context.pageContext.web.absoluteUrl,
         pagecultureId:this.context.pageContext.cultureInfo.currentUICultureName,
-        loginName:this.context.pageContext.user.displayName,
+        email:this.context.pageContext.user.email,
         context:this.context,
       }
     );

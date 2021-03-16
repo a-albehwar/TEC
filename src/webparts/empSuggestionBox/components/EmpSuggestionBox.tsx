@@ -3,12 +3,19 @@ import styles from './EmpSuggestionBox.module.scss';
 import { IEmpSuggestionBoxProps } from './IEmpSuggestionBoxProps';
 
 import { sp } from "@pnp/sp/presets/all";
-//import {ItemAddResult } from "@pnp/sp";
-import { Item } from '@pnp/sp-commonjs';
+
 import {  SPHttpClient ,SPHttpClientResponse } from '@microsoft/sp-http';
-import * as pnp from "sp-pnp-js"; 
+
+
+
+import "@pnp/sp/webs";
+import "@pnp/sp/lists";
+import "@pnp/sp/items";
+import { IItemAddResult } from "@pnp/sp/items";
+import { Conversation } from 'sp-pnp-js/lib/graph/conversations';
 declare var arrLang: any;
 declare var lang:string;
+
 const errormsgStyle = {
   color: 'red',
 };
@@ -23,24 +30,37 @@ export interface IListItem {
  
 export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxProps, any> {
   private language:string;
- 
+  private userDepartment:string;
+  private userJobTilte:string;
   public constructor(props) {
     super(props);
     this.state = {     
       fileInfos: null,
     };
-    var searchPreferredName=this.props.loginName;
-    this.props.context.spHttpClient.get(`${this.props.siteurl}/_api/search/query?querytext='((WorkEmail:*tecq8.onmicrosoft.com)+AND+(PreferredName:`+encodeURIComponent(searchPreferredName)+`)+AND+(PreferredName:`+encodeURIComponent(searchPreferredName)+`))'&selectproperties='AccountName,Department,JobTitle,Path,PictureURL,PreferredName,FirstName,WorkEmail,WorkPhone,SPS-PhoneticDisplayName,OfficeNumber'&sourceid='B09A7990-05EA-4AF9-81EF-EDFAB16C4E31'&sortlist='firstname:ascending'&rowLimit=1000`,SPHttpClient.configurations.v1)
+    var searchPreferredmail=this.props.email;
+    
+    //var searchPreferredmail="j.joshua@tec.com.kw"; // for testing done
+    
+    this.props.context.spHttpClient.get(`${this.props.siteurl}/_api/search/query?querytext=%27(WorkEmail:`+encodeURIComponent(searchPreferredmail)+`)%27&selectproperties=%27AccountName,Department,JobTitle,WorkEmail%27&sourceid=%27B09A7990-05EA-4AF9-81EF-EDFAB16C4E31%27&sortlist=%27firstname:ascending%27`,SPHttpClient.configurations.v1)
     .then((response) => {
       return response.json().then((items: any): void => {
         //console.log('items.value: ', items.value);
-        debugger;
+        
         let listItems =
           items["PrimaryQueryResult"]["RelevantResults"]["Table"]["Rows"];
-                
-
-        items=listItems;  
-        console.log("list items: ", listItems);
+          listItems.forEach((item) => {
+            var itemResult = item["Cells"];
+            itemResult.forEach((itemCell) => {
+              if (itemCell["Key"] == "Department") {
+                this.userDepartment=itemCell["Value"] != null? itemCell["Value"]:"";
+                console.log(this.userDepartment);
+              }
+              else if (itemCell["Key"] == "JobTitle") {
+                this.userJobTilte=itemCell["Value"] != null? itemCell["Value"]:"";
+                console.log(this.userJobTilte);
+              }
+            });
+          });
       });
     });
   }
@@ -87,6 +107,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
                 <input type="file" multiple={true} className={"form-control"} id="file" onChange={this.addFile.bind(this)} />
                
             </div>
+          
             <div className="col-lg-4">
               
               <button className={"red-btn shadow-sm  mr-3"} id="btnSubmit"   onClick={this.upload.bind(this)}>{arrLang[lang]['SuggestionBox']['Submit']}</button>
@@ -192,6 +213,8 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
               Description:sug_Desc,
               Suggestion_StatusId: 1,
               Suggestion_Type:sug_Type,
+              User_JobTitle:this.userJobTilte,
+              User_Department:this.userDepartment,
             }).then(r=>{
               r.item.attachmentFiles.addMultiple(fileInfos);
               this.updateLogs(r.data.Id);
@@ -208,6 +231,9 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
               Title:  sug_title,
               Description_Ar:sug_Desc,
               Suggestion_StatusId: 1,
+              Suggestion_Type:sug_Type,
+              User_JobTitle:this.userJobTilte,
+              User_Department:this.userDepartment,
             }).then(r=>{
               r.item.attachmentFiles.addMultiple(fileInfos);
               this.updateLogs(r.data.Id);
@@ -226,14 +252,18 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
     event.preventDefault();
     return false;
   }
-  private updateLogs(item) {
-    sp.web.lists.getByTitle("SuggestionsBoxWorkflowLogs").items.add({
-      Title: item,
-    }).then((iar) => {
+  private  updateLogs(ITEMID) {
+   sp.site.rootWeb.lists.getByTitle("SuggestionsBoxWorkflowLogs").items.add({
+      Title: ITEMID.toString(),
+      SuggestionIDId: ITEMID,
+      StatusId:1,
+    }).then(iar => {
       console.log(iar);
-    }).catch(function(err) {  
-      console.log(err);  
+    }).catch((error:any) => {
+      console.log("Error: ", error);
     });
+    // add an item to the list
+    
   }
   private createItem(item): void {  
     const body: string = JSON.stringify({  
