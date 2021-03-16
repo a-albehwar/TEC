@@ -6,4 +6,5 @@ export interface IEmpSuggestionBoxProps {
   siteurl: string;
   weburl:string;
   pagecultureId:string;
+  loginName:string;
 }

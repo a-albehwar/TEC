@@ -6,6 +6,7 @@ import { sp } from "@pnp/sp/presets/all";
 //import {ItemAddResult } from "@pnp/sp";
 import { Item } from '@pnp/sp-commonjs';
 import {  SPHttpClient ,SPHttpClientResponse } from '@microsoft/sp-http';
+import * as pnp from "sp-pnp-js"; 
 declare var arrLang: any;
 declare var lang:string;
 const errormsgStyle = {
@@ -19,6 +20,7 @@ export interface IListItem {
   Title?: string;  
   Id: number;  
 }  
+ 
 export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxProps, any> {
   private language:string;
  
@@ -27,7 +29,23 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
     this.state = {     
       fileInfos: null,
     };
+    var searchPreferredName=this.props.loginName;
+    this.props.context.spHttpClient.get(`${this.props.siteurl}/_api/search/query?querytext='((WorkEmail:*tecq8.onmicrosoft.com)+AND+(PreferredName:`+encodeURIComponent(searchPreferredName)+`)+AND+(PreferredName:`+encodeURIComponent(searchPreferredName)+`))'&selectproperties='AccountName,Department,JobTitle,Path,PictureURL,PreferredName,FirstName,WorkEmail,WorkPhone,SPS-PhoneticDisplayName,OfficeNumber'&sourceid='B09A7990-05EA-4AF9-81EF-EDFAB16C4E31'&sortlist='firstname:ascending'&rowLimit=1000`,SPHttpClient.configurations.v1)
+    .then((response) => {
+      return response.json().then((items: any): void => {
+        //console.log('items.value: ', items.value);
+        debugger;
+        let listItems =
+          items["PrimaryQueryResult"]["RelevantResults"]["Table"]["Rows"];
+                
+
+        items=listItems;  
+        console.log("list items: ", listItems);
+      });
+    });
   }
+
+  
  
   public render(): React.ReactElement<IEmpSuggestionBoxProps> {
     var weburl=this.props.weburl;
@@ -39,7 +57,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
             <div className={"col-lg-4  mb-2"}>
                 <label id="lbl_Sug_Type" className={"form-label"}>{arrLang[lang]['SuggestionBox']['SugType']}<span  style={errormsgStyle}>*</span></label>
             </div>
-            <div className="col-lg-12 mb-2 vleft">
+            <div className="col-lg-6 mb-2 vleft">
                 <input type="radio" id="rb_money" name="suggestionType" className={"form-control"} value="Save Money" onChange={this.handleradioClick}></input>
                 <label  id="lbl_money" className={"form-label"}>{arrLang[lang]['SuggestionBox']['SaveMoney']}</label>
                 <input type="radio" id="rb_security" name="suggestionType" className={"form-control"} value="Improve Safety" onChange={this.handleradioClick}></input>
@@ -51,7 +69,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
                 <label id="lbl_SugTypeerr" className={"form-label"}  style={errormsgStyle}></label>
             </div>
             <div id='div_other' className={"col-lg-4  mb-2"} style={displayStyle}>
-              <label id="lbl_Other" className={"form-label"}>{arrLang[lang]['SuggestionBox']['Other']}</label>                 
+              <label id="lbl_Other" className={"form-label"}>{arrLang[lang]['SuggestionBox']['Other']}<span  style={errormsgStyle}>*</span></label>                 
               <input type="text" id="txt_other" className={"form-control"} name="other" placeholder={arrLang[lang]['SuggestionBox']['Other']}/>
             </div>
            <div className={"col-lg-4  mb-2"}>  
@@ -213,6 +231,8 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
       Title: item,
     }).then((iar) => {
       console.log(iar);
+    }).catch(function(err) {  
+      console.log(err);  
     });
   }
   private createItem(item): void {  
@@ -241,5 +261,5 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
       console.log('Error while creating the item: ' + error);  
     });  
   }  
-
+  
 }
