@@ -29,7 +29,7 @@ declare var lang: any;
 const url : any = new URL(window.location.href);
 const vsid= url.searchParams.get("vsid");
 var statusid;
-
+var CurrentUsergroups =[];
 var isinnovateteamMember;
 export interface ISPLists 
 {
@@ -68,11 +68,32 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
   private Listname: string = "SuggestionsBox";
   private LogsListname: string = "SuggestionsBoxWorkflowLogs";
 
-  
-  
+  private UploadFiles(itemid:string) {
+    let input = <HTMLInputElement>document.getElementById("deptfile");
+    let file = input.files[0];
+   // var files = document.getElementById('deptfile');
+   
+    if (file!=undefined || file!=null){
+
+    //assuming that the name of document library is Documents, change as per your requirement, 
+    //this will add the file in root folder of the document library, if you have a folder named test, replace it as "/Documents/test"
+    sp.site.rootWeb.getFolderByServerRelativeUrl("/sites/IntranetDev/SuggestionBoxDocuments").files.add(file.name, file, true).then((result) => {
+        console.log(file.name + " upload successfully!");
+          result.file.listItemAllFields.get().then((listItemAllFields) => {
+             // get the item id of the file and then update the columns(properties)
+            sp.site.rootWeb.lists.getByTitle("SuggestionBoxDocuments").items.getById(listItemAllFields.Id).update({
+                        //Title: 'My New Title',
+                        Suggestion_IDId:itemid,
+            }).then(r=>{
+                        console.log(file.name + " properties updated successfully!");
+            });           
+        }); 
+    });
+    }
+  }
   
 
-  private _checkUserInGroup(strGroup)
+  private async _checkUserInGroup(strGroup:string)
   {
 
     let InGroup:boolean = false;
@@ -84,24 +105,28 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
         return response.json()
           .then((items: any): void => {
             let listItems: ISPList[] = items["value"];
-            listItems.forEach((item: ISPList) => {
-              if(item.Title==strGroup)
-              {
-                isinnovateteamMember=true;
-                
+            for(var i=0;i<listItems.length;i++)
+            {
+              if(listItems[i].Title !="SharingLinks.9b857bbf-2ae3-4a28-b7fe-599c89b01da6.OrganizationView.71abe19a-67c7-492a-949a-ba7901eef508"){
+                if(listItems[i].Title==strGroup)
+                {
+                  InGroup=true;  
+                  
+                }
+                break;
               }
-            });
+            }
           });
-         
+        
         });   
-      
+        return InGroup;
   }
   
   private _externalJsUrl: string = "https://tecq8.sharepoint.com/sites/IntranetDev/Style%20Library/TEC/JS/CustomJs.js";
 
   // adding customjs file before render
   public onInit(): Promise<void> {
-    console.log(`ViewSuggestionWebPart.onInit(): Entered.`);
+    //console.log(`ViewSuggestionWebPart.onInit(): Entered.`);
     
     let scriptTag: HTMLScriptElement = document.createElement("script");
     scriptTag.src = this._externalJsUrl;
@@ -167,17 +192,9 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                if(items.value[0].AttachmentFiles.length>0){
                 for(var i=0;i<items.value[0].AttachmentFiles.length;i++){
                   var anchorfileURL=this.context.pageContext.site.absoluteUrl+"/Lists/SuggestionsBox/Attachments/"+vsid+"/"+items.value[0].AttachmentFiles[i].FileNameAsPath.DecodedUrl+"?web=1";
-                  console.log(anchorfileURL);
+                  //console.log(anchorfileURL);
                   anchorhtml+='<a href="'+anchorfileURL+'">'+items.value[0].AttachmentFiles[i].FileName+'</a><br>';
-                 /*var a = document.createElement('a');
-                 a.target = '_blank';
-                 a.href = items.value[0].AttachmentFiles[i].ServerRelativeUrl;
-                 a.innerText = items.value[0].AttachmentFiles[i].FileName;
                 
-                 var ancContainer = document.getElementById('anchorcontainer');
-                 ancContainer.appendChild(a);
-                 ancContainer.appendChild(document.createElement('br'));
-                 */
                 }
                }
                statusid=items.Suggestion_StatusId;
@@ -185,23 +202,23 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   $( "#tab2" ).empty();
                   InnovateTabhtml += `
                           <div class="col-lg-12  mb-2">   
-                          <label id="lbl_Status_Header" class="form-label">Status</label>
+                          <label id="lbl_Status_Header" class="form-label">`+arrLang[lang]['SuggestionBox']['Status']+`</label>
                           </div>  
                           <div class="col-lg-12 mb-2 vleft">
                             <input type="radio" id="rb_arabic" name="language" class="form-control" value="8">
-                            <label for="arabic" id="lbl_rb_Arabic" class="form-label">Standby</label><br>
+                            <label for="arabic" id="lbl_rb_Arabic" class="form-label">`+arrLang[lang]['SuggestionBox']['StandBy']+`</label><br>
                             <input type="radio" id="rb_english" name="language" class="form-control" value="5">
-                            <label for="english"  id="lbl_rb_English" class="form-label">Inprogress</label><br>
+                            <label for="english"  id="lbl_rb_English" class="form-label">`+arrLang[lang]['SuggestionBox']['InProgress']+`</label><br>
                             <input type="radio" id="rb_eng" name="language" class="form-control" value="7">
-                            <label for="english"  id="lbl_rb_English" class="form-label">Completed</label><br>
+                            <label for="english"  id="lbl_rb_English" class="form-label">`+arrLang[lang]['SuggestionBox']['Completed']+`</label><br>
                             <label id="lbl_Langerr" class="form-label" style="color:red"></label>
                           </div>
                           <div class="col-lg-12 mb-2">   
-                            <label id="lbl_Innovation_Second_Header" class="form-label"> Comments </label>
+                            <label id="lbl_Innovation_Second_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['Comments']+` </label>
                             <textarea style="height:auto !important" rows="5" cols="5" id="Innovate_Second_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
                           </div>
                           <div class="col-lg-4  mb-2">   
-                          <button class="red-btn shadow-sm  mt-4" id="btn_Submit"> <span>Submit</span></button>
+                          <button class="red-btn shadow-sm  mt-4" id="btn_Submit"> <span>`+arrLang[lang]['SuggestionBox']['Submit']+`</span></button>
                           </div>
                   `;
                   InnovateTabhtml += '</div></div>';
@@ -213,11 +230,11 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   $( "#tab2" ).empty();
                   InnovateTabhtml += `
                           <div class="col-lg-12  mb-2">   
-                            <label id="lbl_Innovation_Second_Header" class="form-label"> Comments </label>
+                            <label id="lbl_Innovation_Second_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['Comments']+` </label>
                             <textarea style="height:auto !important" rows="5" cols="5" id="Innovate_Second_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
                           </div>
                           <div class="col-lg-4  mb-2">   
-                          <button class="red-btn shadow-sm  mt-4" id="btn_Review_Close" onClick="this.InnovationTeamClosed(); return false;"> <span>Close</span></button>
+                          <button class="red-btn shadow-sm  mt-4" id="btn_Review_Close" onClick="this.InnovationTeamClosed(); return false;"> <span>`+arrLang[lang]['SuggestionBox']['Close']+`</span></button>
                           </div>
                   `;
                   InnovateTabhtml += '</div></div>';
@@ -227,64 +244,57 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                 }
               html += `
               <div class="col-lg-12 mb-2">   
-              <label id="lbl_Title_Header" class="form-label">Suggestion Type</label>
+              <label id="lbl_Title_Header" class="form-label">`+arrLang[lang]['SuggestionBox']['SugType']+`</label>
               <label id="lbl_Title" class="form-label"> : `+sugType+` </label>
               </div> 
                 <div class="col-lg-12 mb-2">   
-                  <label id="lbl_Title_Header" class="form-label">Title</label>
+                  <label id="lbl_Title_Header" class="form-label">`+arrLang[lang]['SuggestionBox']['Title']+`</label>
                   <label id="lbl_Title" class="form-label"> : `+mediatitle+` </label>
                 </div>  
                 <div class="col-lg-12 mb-2">   
-                  <label id="lbl_Suggestion_Header" class="form-label"> Suggestion </label>
+                  <label id="lbl_Suggestion_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['Description']+` </label>
                   <label id="lbl_Suggestion" class="form-label"> : `+mediadesc+`</label>
                 </div>
                 <div class="col-lg-12 mb-2">   
-                  <label id="lbl_Status_Header" class="form-label"> Status </label>
+                  <label id="lbl_Status_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['Status']+` </label>
                   <label id="lbl_Status" class="form-label"> : `+sugStatus+` </label>
                 </div>
                  <div class="col-lg-12 mb-2">   
-                  <label id="lbl_CreatedDate_Header" class="form-label"> Created Date </label>
+                  <label id="lbl_CreatedDate_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['CreatedDate']+` </label>
                   <label id="lbl_CreatedDate" class="form-label"> : `+formatpubDate+`</label>
                 </div>
                 <div class="col-lg-12 mb-2">   
-                  <label id="lbl_CreatedDate_Header" class="form-label"> Created By </label>
+                  <label id="lbl_CreatedDate_Header" class="form-label">`+arrLang[lang]['SuggestionBox']['CreatedBy']+` </label>
                   <label id="lbl_CreatedDate" class="form-label"> : `+sugCreatedBy+`</label>
                 </div>
                 <div class="col-lg-12 mb-2">   
-                  <label id="lbl_CreatedDate_Header" class="form-label"> Job Title </label>
+                  <label id="lbl_CreatedDate_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['JobTitle']+`</label>
                   <label id="lbl_CreatedDate" class="form-label"> : `+sugUserJobTitle+`</label>
                 </div>
                 <div class="col-lg-12 mb-2">   
-                <label id="lbl_CreatedDate_Header" class="form-label"> Department </label>
+                <label id="lbl_CreatedDate_Header" class="form-label">`+arrLang[lang]['SuggestionBox']['Department']+` </label>
                 <label id="lbl_CreatedDate" class="form-label"> : `+sugUserDept+`</label>
               </div>
 
                 <div class="col-lg-12 mb-2">   
-                  <label id="lbl_Attach_Header" class="form-label"> Attachments</label>
+                  <label id="lbl_Attach_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['Attachment']+`</label>
                   <div id="anchorcontainer"> `+anchorhtml+`</div
                 </div>
               `;
-               
-            
-              //}
-            //});
+              
             html += '</div></div>';
             
             const listContainer: Element = this.domElement.querySelector('#tab1');
             listContainer.innerHTML = html;
-
-            //const InnovateTabContainer: Element = this.domElement.querySelector('#tab2');
-            //InnovateTabContainer.innerHTML = InnovateTabhtml;
-
-            //const DeptContainer: Element = this.domElement.querySelector('#tab3');
-            //DeptContainer.innerHTML = DepartmentTabhtml;
-
-            
+            return statusid;
           });
+         
       });
   }
 
   public render(): void {
+    var lcid= this.context.pageContext.legacyPageContext['currentCultureLCID'];  
+    lang=lcid==13313?"ar":"en";
     this.domElement.innerHTML = `
     <section class="inner-page-cont">
            
@@ -293,10 +303,10 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
          </div>
          <div class="container-fluid mt-5" id="Suggestion_Tabs">
                 <ul class="tabs">
-                  <li class="active" rel="tab1">Suggestion Details</li>
-                  <li rel="tab2">Innovation Review</li>
-                  <li rel="tab3">Department Review</li>
-                  <li rel="tab4">Department Head</li>
+                  <li class="active" rel="tab1">`+arrLang[lang]['SuggestionBox']['SuggestionDetails']+`</li>
+                  <li rel="tab2">`+arrLang[lang]['SuggestionBox']['InnovationReview']+`</li>
+                  <li rel="tab3">`+arrLang[lang]['SuggestionBox']['DepartmentReview']+`</li>
+                  <li rel="tab4">`+arrLang[lang]['SuggestionBox']['DepartmentHead']+`</li>
                 </ul>
                 <div class="tab_container">
                   <h3 class="d_active tab_drawer_heading" rel="tab1">`+arrLang[lang]['SuggestionBox']['Details']+`</h3>
@@ -310,16 +320,16 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                       <div class="row gray-box">
                         <div class="col-md-12">
                           <div class="col-lg-4 mb-2">   
-                          <label id="lbl_Title_Header" class="form-label">Department</label>
+                          <label id="lbl_Title_Header" class="form-label">`+arrLang[lang]['SuggestionBox']['Department']+`</label>
                           <select name="department" id="sel_Dept" class="form-control" ></select>
                           </div>  
                           <div class="col-lg-12 mb-2">   
-                            <label id="lbl_Suggestion_Header" class="form-label"> Comments </label>
+                            <label id="lbl_Suggestion_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['Comments']+` </label>
                             <textarea style="height:auto !important" rows="5" cols="5" id="Innovate_First_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
                           </div>
                           <div class="col-lg-4 mb-2">   
-                          <button class="red-btn shadow-sm  mt-4" id="btn_Assign_Dept"> <span>Assign Department</span></button>
-                          <button class="red-btn shadow-sm  mt-4" id="btn_Close"> <span>Close</span></button>
+                          <button class="red-btn shadow-sm  mt-4" id="btn_Assign_Dept"> <span>`+arrLang[lang]['SuggestionBox']['AssignDepartments']+`</span></button>
+                          <button class="red-btn shadow-sm  mt-4" id="btn_Close"> <span>`+arrLang[lang]['SuggestionBox']['Close']+`</span></button>
                           </div>
                         </div>
                       </div>  
@@ -330,16 +340,20 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                     <div class="row gray-box">
                       <div class="col-md-12">
                         <div class="col-lg-12 mb-2">   
-                          <label id="lbl_Attach_Header" class="form-label">Attachment</label>
-                          <input type="file" multiple="true" className="form-control" id="file" />
+                          <label id="lbl_Attach_Header" class="form-label">`+arrLang[lang]['SuggestionBox']['Attachment']+`</label>
+                          <input type="file" className="form-control" id="deptfile"  />
                         </div>  
+                        <div class="col-lg-12 mb-2" style="display:none">   
+                          <label id="lbl_Exist_Attach_Header" class="form-label">`+arrLang[lang]['SuggestionBox']['ExistingAttachment']+`</label>
+                          <a href="#">Attachment Links</a>
+                        </div>
                         <div class="col-lg-12 mb-2">   
-                          <label id="lbl_Comments_Header" class="form-label"> Comments </label>
+                          <label id="lbl_Comments_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['Comments']+` </label>
                           <textarea style="height:auto !important" rows="5" cols="5" id="txt_Department_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
                         </div>
                         <div class="col-lg-4 mb-2">   
-                          <button class="red-btn shadow-sm  mt-4" id="btn_Approve"> <span>Require Approval</span></button>
-                          <button class="red-btn shadow-sm  mt-4" id="btn_Reject"> <span>Reject</span></button>
+                          <button class="red-btn shadow-sm  mt-4" id="btn_Approve"> <span>`+arrLang[lang]['SuggestionBox']['RequrieApproval']+`</span></button>
+                          <button class="red-btn shadow-sm  mt-4" id="btn_Reject"> <span>`+arrLang[lang]['SuggestionBox']['Reject']+`</span></button>
                         </div>
                       </div>
                     </div>
@@ -349,16 +363,12 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                     <div class="row gray-box">
                       <div class="col-md-12">
                         <div class="col-lg-12 mb-2">   
-                          <label id="lbl_Exist_Attach_Header" class="form-label">Existing Attachment</label>
-                          <a href="#">Attachment Links</a>
-                        </div>
-                        <div class="col-lg-12 mb-2">   
-                          <label id="lbl_Dept_Head_Comments_Header" class="form-label"> Comments </label>
+                          <label id="lbl_Dept_Head_Comments_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['Comments']+` </label>
                           <textarea style="height:auto !important" rows="5" cols="5" id="txt_Department_Head_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
                         </div>
                         <dv class="col-lg-4  mb-2">   
-                          <button class="red-btn shadow-sm  mt-4" id="btn_Dept_Head_Approve"> <span>Aprpove</span></button>
-                          <button class="red-btn shadow-sm  mt-4" id="btn_Dept_Head_Reject"> <span>Reject</span></button>
+                          <button class="red-btn shadow-sm  mt-4" id="btn_Dept_Head_Approve"> <span>`+arrLang[lang]['SuggestionBox']['Approve']+`</span></button>
+                          <button class="red-btn shadow-sm  mt-4" id="btn_Dept_Head_Reject"> <span>`+arrLang[lang]['SuggestionBox']['Reject']+`</span></button>
                         </div>
                       </div>
                     </div>  
@@ -366,16 +376,16 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                 </div> 
             </div>
          </section>
-         <h2 style="margin-left: 20px;">History</h2>
+         <h2 style="margin-left: 20px;"> `+arrLang[lang]['SuggestionBox']['History']+`</h2>
          <div class="container-fluid">
             
                           <table class="table table-bordered table-hover footable">
                             <thead>
                                 <tr>
-                                  <th data-breakpoints="xs">Status</th>
-                                  <th data-breakpoints="xs">Comments</th>
-                                  <th data-breakpoints="xs">Action Date</th>
-                                  <th data-breakpoints="xs">Approved By</th>
+                                  <th data-breakpoints="xs"> `+arrLang[lang]['SuggestionBox']['Status']+`</th>
+                                  <th data-breakpoints="xs"> `+arrLang[lang]['SuggestionBox']['Comments']+`</th>
+                                  <th data-breakpoints="xs"> `+arrLang[lang]['SuggestionBox']['ActionDate']+`</th>
+                                  <th data-breakpoints="xs"> `+arrLang[lang]['SuggestionBox']['ApprovedBy']+`</th>
                                 </tr>
                             </thead>
                             <tbody id="tbl_tb_history">
@@ -385,26 +395,66 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
            </div>
     `;
 
-      //this.Localization();
-      this._checkUserInGroup("InnovationTeam");
+      
+      //this._checkUserInGroup("InnovationTeam");
+      //this._getListCustomerData("InnovationTeam");
+      
+      this.DisableControlsBasedPermission();
       this.getMediaByID();
       this.LoadDepartments();
       this.setButtonsEventHandlers();
       this.getLogsByID();
-      if (isinnovateteamMember==false){
+     
+      
+       
+  }
+
+  private async DisableControlsBasedPermission()
+  {
+   const isexists=await this._getListCustomerData("InnovationTeam");
+   //alert(isexists);
+    for(var i=0;i<CurrentUsergroups.length;i++)
+    {
+      if ( CurrentUsergroups[i].Title!="InnovationTeam"){
         $('#tab2').hide();
         $('#Suggestion_Tabs ul > li:eq(1)').hide();
-        console.log(isinnovateteamMember);
-       }
-       else{
-        $('#Suggestion_Tabs ul > li:eq(1)').show();
-        $('#tab2').show();
-        console.log(isinnovateteamMember);
-       }
-  
+        }
+      
+    }
   }
-  
-   
+  public componentDidMount()
+  {
+    //this._getListCustomerData("InnovationTeam");
+  }
+    private  async _getListCustomerData(strGroup:string)
+    {    
+      this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/currentuser/groups`, SPHttpClient.configurations.v1)
+      .then(response => {
+        return response.clone().json()
+          .then((items: any): void => {
+            
+            let listItems: ISPList[] = items["value"];
+            Array.prototype.push.apply(CurrentUsergroups, listItems)
+           
+           /* for(var i=0;i<listItems.length;i++)
+            { CurrentUsergroups.push(listItems[i].Title);
+
+              if(listItems[i].Title !="SharingLinks.9b857bbf-2ae3-4a28-b7fe-599c89b01da6.OrganizationView.71abe19a-67c7-492a-949a-ba7901eef508"){
+                if(listItems[i].Title==strGroup)
+                {
+                  isinnovateteamMember=true;  
+                  
+                }
+                break;
+              }
+            }*/
+            console.log(CurrentUsergroups);
+          });
+         
+        });   
+    return CurrentUsergroups;
+  }
+
   private setButtonsEventHandlers(): void {
     const webPart: ViewSuggestionWebPart = this;
     
@@ -470,10 +520,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     });
   }
 
-  private Localization(): void {
-    var lcid=this.context.pageContext.legacyPageContext['currentCultureLCID'];  
-     lang=lcid==13313?"ar":"en";
-  }
+  
   private LoadDepartments():void{
     sp.site.rootWeb.lists.getByTitle("LK_Departments").items.select("Title","ID").get()
     .then(function (data) {
@@ -533,6 +580,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Suggestion_StatusId: 3,
     }).then(r=>{
       this.updateLogs(vsid,3,$("#txt_Department_Comments").val());
+      this.UploadFiles(vsid);
       alert("Suggestion Approved Successfully");
       window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
     }).catch(function(err) {  
@@ -580,31 +628,6 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     }).catch(function(err) {  
       console.log(err);  
     });
-  }
-
-  private addFile(event) {
-    //let resultFile = document.getElementById('file');
-    let resultFile = event.target.files;
-    console.log(resultFile);
-    let fileInfos = [];
-    for (var i = 0; i < resultFile.length; i++) {
-      var fileName = resultFile[i].name;
-      console.log(fileName);
-      var file = resultFile[i];
-      var reader = new FileReader();
-      reader.onload = (function(file) {
-         return function(e) {
-              //Push the converted file into array
-               fileInfos.push({
-                  "name": file.name,
-                  "content": e.target.result
-                  });
-                }
-         })(file);
-      reader.readAsArrayBuffer(file);
-    }
-   // this.setState({fileInfos});
-    console.log(fileInfos)
   }
 
   private ClosingInnovationTeam(){
