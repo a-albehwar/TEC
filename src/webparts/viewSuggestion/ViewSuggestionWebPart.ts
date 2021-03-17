@@ -16,6 +16,7 @@ import { Web, IWeb } from "@pnp/sp/webs";
 import "@pnp/sp/site-users/web";
 import { SiteGroups } from '@pnp/sp/site-groups';
 import * as $ from 'jquery';
+import { HighContrastSelectorWhite } from 'office-ui-fabric-react';
 
 enum statusValues {
   Suggestioninitiated= 1,
@@ -68,10 +69,11 @@ export interface ISPList
   };
   AssignedDepartment:{
     Title:string,
-    ID:number
+    ID:number,
   }
   User_JobTitle:string;
   User_Department:string;
+  Assigned_Dept_Comments:string;
 }
 
 
@@ -107,34 +109,27 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     });
     }
   }
-  
-  
-
-  private  _checkUserInGroup(strGroup:string)
+  private async _checkUserInGroup(strGroup:string)
   {
-
-    let InGroup:boolean = false;
-    
-    //const queryUrl = `${this.context.pageContext.site.absoluteUrl}/_api/web/currentuser/groups`;
-     this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/currentuser/groups`, SPHttpClient.configurations.v1)
-      .then(response => {
-        return response.json()
-          .then((items: any) => {
-            for(var i=0;i<items.value.length;i++){
-              groups.push(items.value[i].Title);
-              if(items.value[i].Title==strGroup){
-                InGroup=true;
-              }
-              //break;
-            }
-           
-          });
-         
-        });   
-        //console.log(groups);
-        return InGroup;
+    let groups1 = await sp.web.currentUser.groups();
+    let lkstsid=await sp.site.rootWeb.lists.getByTitle("SuggestionsBox").items.getById(vsid).select( "AssignedDepartment/ID").expand("AssignedDepartment").get();
+    //alert(groups1);
+    for(var i=0;i<groups1.length;i++){
+      groups.push(groups1[i].Title);
+    }
+    var deptid=lkstsid.AssignedDepartment.ID;
+    if(groups.length>0)
+    {
+      var Suggdept=$.inArray( deptid+"-SuggestionsBoxDepartment", groups ) ;
+      var Sugdepthead=$.inArray( deptid+"-SuggestionsBoxDepartmentHead", groups ) ;//"1-SuggestionsBoxDepartmentHead"
+      var inteam=$.inArray( "InnovationTeam", groups ) ;
+      if(Suggdept<0&&Sugdepthead<0&&inteam<0){
+        alert(arrLang[lang]['SuggestionBox']['UnAuthorized']);
+        window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/"+lang+"/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+      }
+    }
   }
-  
+
   private _externalJsUrl: string = "https://tecq8.sharepoint.com/sites/IntranetDev/Style%20Library/TEC/JS/CustomJs.js";
 
   // adding customjs file before render
@@ -145,6 +140,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     scriptTag.type = "text/javascript";
     document.getElementsByTagName("head")[0].appendChild(scriptTag);
     isinnovateteamMember=this._checkUserInGroup("1-SuggestionsBoxDepartment");
+    console.log(isinnovateteamMember);
     return Promise.resolve<void>();
   }
   private getLogsByID(){
@@ -198,11 +194,13 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                var mediadesc=lang=="en"?items.value[0].Description: items.value[0].Description_Ar;
                var sugStatus=items.value[0].Suggestion_Status.Title;
                var sugCreatedBy=items.value[0].Author.Title;
-               var sugAssignedDeptTitle=items.value[0].AssignedDepartment.Title!=null?items.value[0].AssignedDepartment.Title:"";
-               var sugAssignedDeptID=items.value[0].AssignedDepartment.ID!=null?items.value[0].AssignedDepartment.ID:"";
+               var sugAssignedDeptTitle=items.value[0].AssignedDepartmentId!=null?items.value[0].AssignedDepartment.Title:"";
+               var sugAssignedDeptID=items.value[0].AssignedDepartmentId!=null?items.value[0].AssignedDepartmentId:"";
                var sugUserJobTitle=items.value[0].User_JobTitle!=null?items.value[0].User_JobTitle:"";
                var sugUserDept=items.value[0].User_Department!=null?items.value[0].User_Department:"";
                var sugType=items.value[0].Suggestion_Type;
+               var sug_inn_team_first_comments=items.value[0].Innovation_Team_Review!=null?items.value[0].Innovation_Team_Review:"";
+               var sug_Assign_dept_comments=items.value[0].Assigned_Dept_Comments!=null?items.value[0].Assigned_Dept_Comments:"";
                if(items.value[0].AttachmentFiles.length>0){
                 for(var i=0;i<items.value[0].AttachmentFiles.length;i++){
                   var anchorfileURL=this.context.pageContext.site.absoluteUrl+"/Lists/SuggestionsBox/Attachments/"+vsid+"/"+items.value[0].AttachmentFiles[i].FileNameAsPath.DecodedUrl+"?web=1";
@@ -246,6 +244,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                           <div class="col-lg-12  mb-2">   
                             <label id="lbl_Innovation_Second_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['Comments']+` </label>
                             <textarea style="height:auto !important" rows="5" cols="5" id="Innovate_Second_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
+                            <label id="lbl_Innovate_second_comments" class="form-label" style="color:red"></label>
                           </div>
                           <div class="col-lg-4  mb-2">   
                           <button class="red-btn shadow-sm  mt-4" id="btn_Review_Close" onClick="this.InnovationTeamClosed(); return false;"> <span>`+arrLang[lang]['SuggestionBox']['Close']+`</span></button>
@@ -331,16 +330,24 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                  
                   $("#btn_Assign_Dept").hide();
                   $("#btn_Close").hide();
+
+                  $('#sel_Dept').val(sugAssignedDeptID);
+                  
+                  
+                  
+                  $('#Innovate_First_Comments').val(sug_inn_team_first_comments);
+                 
+
                 }
                 else if(statusid==statusValues.AssignedDeparmentApproved){
                   $("#sel_Dept").off();
                   $('#sel_Dept').prop('disabled', true);
                   $('#deptfile').prop('disabled', true);
                   $('#Innovate_First_Comments').prop('disabled', true);
-                
+                  $('#txt_Department_Comments').val(sug_Assign_dept_comments);
                   $('#txt_Department_Comments').prop('disabled', true);
                   //buttons hide
-                  
+                  $('#div_dept_files').show();
                   $("#btn_Approve").hide();
                   $("#btn_Reject").hide();
                   $("#btn_Assign_Dept").hide();
@@ -351,7 +358,10 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   $('#deptfile').prop('disabled', true);
                  
                   $('#txt_Department_Head_Comments').prop('disabled', true);
+                  $('#txt_Department_Comments').val(sug_Assign_dept_comments);
                   $('#txt_Department_Comments').prop('disabled', true);
+                  $('#div_dept_files').show();
+                  //div_dept_files
                   //buttons hide
                   $("#btn_Dept_Head_Approve").hide();
                   $("#btn_Dept_Head_Reject").hide();
@@ -375,9 +385,20 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                 
                 }
                 else if(statusid==statusValues.InnovationteamClosed){
+                  $('#sel_Dept').val(sugAssignedDeptID);
+                  $("#sel_Dept").off();
+                  $('#sel_Dept').prop('disabled', true);
+                  
+                  
+                  $('#Innovate_First_Comments').val(sug_inn_team_first_comments);
+                  $('#Innovate_First_Comments').prop('disabled', true);
+
+                  $('#txt_Department_Comments').val(sug_Assign_dept_comments);
+                  $('#txt_Department_Comments').prop('disabled', true);
+                  $('#div_dept_files').show();
                   
                   $('#deptfile').prop('disabled', true);
-                  
+                  //sug_inn_team_first_comments
                   $('#txt_Department_Head_Comments').prop('disabled', true);
                   $('#Innovate_Second_Comments').prop('disabled', true);
                   $('#txt_Department_Comments').prop('disabled', true);
@@ -387,7 +408,8 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   $("#btn_Approve").hide();
                   $("#btn_Reject").hide();
                   $("#btn_Review_Close").hide();
-                  
+                  $("#btn_Assign_Dept").hide();
+                  $("#btn_Close").hide();
                   $("#btn_Submit").hide();
                     // disabled radio button 
                      $("input[name='language']").each(function(i) {
@@ -466,7 +488,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
          <div class="Inner-page-title">
              <h2 class="page-heading">TABS</h2>
          </div>
-         <div class="container-fluid mt-5" id="Suggestion_Tabs">
+         <div class="container-fluid" id="Suggestion_Tabs">
                 <ul class="tabs">
                   <li class="active" rel="tab1">`+arrLang[lang]['SuggestionBox']['SuggestionDetails']+`</li>
                   <li rel="tab2">`+arrLang[lang]['SuggestionBox']['InnovationReview']+`</li>
@@ -487,10 +509,12 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                           <div class="col-lg-4 mb-2">   
                           <label id="lbl_Title_Header" class="form-label">`+arrLang[lang]['SuggestionBox']['Department']+`</label>
                           <select name="department" id="sel_Dept" class="form-control" ></select>
+                          <label id="lbl_deptErr" class="form-label" style="color: red;"></label>
                           </div>  
                           <div class="col-lg-12 mb-2">   
                             <label id="lbl_Suggestion_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['Comments']+` </label>
                             <textarea style="height:auto !important" rows="5" cols="5" id="Innovate_First_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
+                            <label id="lbl_Innovate_first_comm_err" class="form-label" style="color: red;"></label>
                           </div>
                           <div class="col-lg-4 mb-2">   
                           <button class="red-btn shadow-sm  mt-4" id="btn_Assign_Dept"> <span>`+arrLang[lang]['SuggestionBox']['AssignDepartments']+`</span></button>
@@ -508,13 +532,14 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                           <label id="lbl_Attach_Header" class="form-label">`+arrLang[lang]['SuggestionBox']['Attachment']+`</label>
                           <input type="file" className="form-control" id="deptfile"  />
                         </div>  
-                        <div class="col-lg-12 mb-2" style="display:none">   
+                        <div class="col-lg-12 mb-2" id="div_dept_files" style="display:none">   
                           <label id="lbl_Exist_Attach_Header" class="form-label">`+arrLang[lang]['SuggestionBox']['ExistingAttachment']+`</label>
                           <a href="#">Attachment Links</a>
                         </div>
                         <div class="col-lg-12 mb-2">   
                           <label id="lbl_Comments_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['Comments']+` </label>
                           <textarea style="height:auto !important" rows="5" cols="5" id="txt_Department_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
+                          <label id="lbl_dept_comm_err" class="form-label" style="color: red;"></label>
                         </div>
                         <div class="col-lg-4 mb-2">   
                           <button class="red-btn shadow-sm  mt-4" id="btn_Approve"> <span>`+arrLang[lang]['SuggestionBox']['RequrieApproval']+`</span></button>
@@ -560,76 +585,13 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
            </div>
     `;
 
-      
-      //var statusdata=[];
-      //statusdata.push(this.GetServiceListData());
-      
-      //this._getListCustomerData("InnovationTeam");
-      //alert(isinnovateteamMember);
-      
-      
-      //this.DisableControlsBasedPermission();
       this.getMediaByID();
       this.LoadDepartments();
       this.setButtonsEventHandlers();
       this.getLogsByID();
-      var Suggdept=$.inArray( "1-SuggestionsBoxDepartment", groups ) ;
-      var inteam=$.inArray( "InnovationTeam", groups ) ;
-      alert(Suggdept + inteam);
+     
   }
   
-  private GetServiceListData():Promise<any>  
-  { 
-      return sp.site.rootWeb.lists.getByTitle('LK_Suggestion_Status').items
-          .select('Title,ID').get().then(response => {
-              let preprocessedData;
-              preprocessedData=response.values;
-              return preprocessedData;
-          });
-  }
-  private  DisableControlsBasedPermission()
-  {
-   const isexists= this._getListCustomerData("InnovationTeam");
-   //alert(isexists);
-    for(var i=0;i<CurrentUsergroups.length;i++)
-    {
-      if ( CurrentUsergroups[i].Title!="InnovationTeam"){
-        $('#tab2').hide();
-        $('#Suggestion_Tabs ul > li:eq(1)').hide();
-        }
-      
-    }
-  }
- 
-    private  async _getListCustomerData(strGroup:string)
-    {    
-      this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/currentuser/groups`, SPHttpClient.configurations.v1)
-      .then(response => {
-        return response.clone().json()
-          .then((items: any): void => {
-            
-            let listItems: ISPList[] = items["value"];
-            Array.prototype.push.apply(CurrentUsergroups, listItems);
-           
-           /* for(var i=0;i<items.length;i++)
-            { 
-
-              if(items[i].Title !="SharingLinks.9b857bbf-2ae3-4a28-b7fe-599c89b01da6.OrganizationView.71abe19a-67c7-492a-949a-ba7901eef508"){
-                if(listItems[i].Title==strGroup)
-                {
-                  isinnovateteamMember=true;  
-                  
-                }
-                break;
-              }
-            }*/
-            console.log(CurrentUsergroups);
-          });
-         
-        });   
-    return CurrentUsergroups;
-  }
-
   private setButtonsEventHandlers(): void {
     const webPart: ViewSuggestionWebPart = this;
     
@@ -640,6 +602,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
      
      this.domElement.querySelector('#btn_Close').addEventListener('click', (e) => { 
       e.preventDefault();
+      
       webPart.ClosingInnovationTeam();
      });
 
@@ -709,16 +672,23 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
   }
   
   private InnovationTeamClosed(){
-    sp.site.rootWeb.lists.getByTitle(this.Listname).items.getById(vsid).update({
-      Innovation_Team_Review: $("#Innovate_Second_Comments").val(),
-      Suggestion_StatusId: 6,
-    }).then(r=>{
-      this.updateLogs(vsid,6,$("#Innovate_Second_Comments").val());
-      alert("Suggestion Updated Successfully");
-      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
-    }).catch(function(err) {  
-      console.log(err);  
-   });
+   //lbl_Innovate_second_comments
+    $("#lbl_Innovate_second_comments").val(" ");
+          var innsecondCmmt=$("#Innovate_Second_Comments").val();
+            if(innsecondCmmt!=""){
+                sp.site.rootWeb.lists.getByTitle(this.Listname).items.getById(vsid).update({
+                  Innovation_Team_Review: innsecondCmmt,
+                  Suggestion_StatusId: 6,
+                }).then(r=>{
+                  this.updateLogs(vsid,6,innsecondCmmt);
+                  alert(arrLang[lang]['SuggestionBox']['SuccessClosed']);
+                  window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/"+lang+"/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+                }).catch(function(err) {  
+                  console.log(err);  
+              });
+            }else{
+              $("#lbl_Innovate_second_comments").text(arrLang[lang]['SuggestionBox']['CommentMandatory']);
+            }
     
   }
 
@@ -728,8 +698,8 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Suggestion_StatusId: stsid,
     }).then(r=>{
       this.updateLogs(vsid,stsid,$("#Innovate_Second_Comments").val());
-      alert("Suggestion Updated Successfully");
-      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+      alert(arrLang[lang]['SuggestionBox']['SuccessUpdated']);
+      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/"+lang+"/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
     }).catch(function(err) {  
       console.log(err);  
    });
@@ -742,39 +712,51 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Suggestion_StatusId: 2,
     }).then(r=>{
       this.updateLogs(vsid,2,$("#Innovate_First_Comments").val());
-      alert("Suggestion Updated Successfully");
-      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+      alert(arrLang[lang]['SuggestionBox']['SuccessUpdated']);
+      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/"+lang+"/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
     }).catch(function(err) {  
       console.log(err);  
    });
   }
 
   private DepartmentApprove(){
-    sp.site.rootWeb.lists.getByTitle(this.Listname).items.getById(vsid).update({
-      Assigned_Dept_Comments: $("#txt_Department_Comments").val(),
-      Suggestion_StatusId: 3,
-    }).then(r=>{
-      this.updateLogs(vsid,3,$("#txt_Department_Comments").val());
-      this.UploadFiles(vsid);
-      alert("Suggestion Approved Successfully");
-      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
-    }).catch(function(err) {  
-      console.log(err);  
-    });
+    //txt_Department_Comments
+   
+            sp.site.rootWeb.lists.getByTitle(this.Listname).items.getById(vsid).update({
+              Assigned_Dept_Comments: $("#txt_Department_Comments").val(),
+              Suggestion_StatusId: 3,
+            }).then(r=>{
+              this.updateLogs(vsid,3,$("#txt_Department_Comments").val());
+              this.UploadFiles(vsid);
+              alert(arrLang[lang]['SuggestionBox']['SuccessApproved']);
+              window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/"+lang+"/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+            }).catch(function(err) {  
+              console.log(err);  
+            });
+          
+          
   }
 
-  private DepartmentReject(){
-    sp.site.rootWeb.lists.getByTitle(this.Listname).items.getById(vsid).update({
-      Assigned_Dept_Comments: $("#txt_Department_Comments").val(),
-      Suggestion_StatusId:4,
-    }).then(r=>{
-      this.updateLogs(vsid,4,$("#txt_Department_Comments").val());
-      alert("Suggestion Rejected Successfully");
-      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+  private DepartmentReject()
+  {
+        $("#lbl_dept_comm_err").val(" ");
+        var deptComments=$("#txt_Department_Comments").val();
+          if(deptComments!=""){
+            sp.site.rootWeb.lists.getByTitle(this.Listname).items.getById(vsid).update({
+              Assigned_Dept_Comments: $("#txt_Department_Comments").val(),
+              Suggestion_StatusId:4,
+            }).then(r=>{
+              this.updateLogs(vsid,4,$("#txt_Department_Comments").val());
+              alert(arrLang[lang]['SuggestionBox']['SuccessRejected']);
+              window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/"+lang+"/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
 
-    }).catch(function(err) {  
-      console.log(err);  
-    });
+            }).catch(function(err) {  
+              console.log(err);  
+            });
+          }
+          else{
+            $("#lbl_dept_comm_err").text(arrLang[lang]['SuggestionBox']['CommentMandatory']);
+          }
   }
 
   private DepartmentHeadApprove(){
@@ -783,8 +765,8 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Suggestion_StatusId: 9,
     }).then(r=>{
       this.updateLogs(vsid,9,$("#txt_Department_Head_Comments").val());
-      alert("Suggestion Approved Successfully");
-      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+      alert(arrLang[lang]['SuggestionBox']['SuccessApproved']);
+      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/"+lang+"/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
 
     }).catch(function(err) {  
       console.log(err);  
@@ -797,8 +779,8 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       Suggestion_StatusId: 10,
     }).then(r=>{
       this.updateLogs(vsid,10, $("#txt_Department_Head_Comments").val());
-      alert("Suggestion Rejected Successfully");
-      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+      alert(arrLang[lang]['SuggestionBox']['SuccessRejected']);
+      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/"+lang+"/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
 
     }).catch(function(err) {  
       console.log(err);  
@@ -806,18 +788,24 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
   }
 
   private ClosingInnovationTeam(){
-    sp.site.rootWeb.lists.getByTitle(this.Listname).items.getById(vsid).update({
-      AssignedDepartmentId: $("#sel_Dept").val(),
-      Innovation_Team_Review: $("#Innovate_First_Comments").val(),
-      Suggestion_StatusId: 6,
-    }).then(r=>{
-      this.updateLogs(vsid,6,$("#Innovate_First_Comments").val());
-      alert("Suggestion Closed Successfully");
-      window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/EN/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+    $("#lbl_Innovate_first_comm_err").val(" ");
+    var innovate_FirstComments=$("#Innovate_First_Comments").val();
+        if(innovate_FirstComments!=""){
+              sp.site.rootWeb.lists.getByTitle(this.Listname).items.getById(vsid).update({
+                AssignedDepartmentId: $("#sel_Dept").val(),
+                Innovation_Team_Review: $("#Innovate_First_Comments").val(),
+                Suggestion_StatusId: 6,
+              }).then(r=>{
+                this.updateLogs(vsid,6,$("#Innovate_First_Comments").val());
+                alert(arrLang[lang]['SuggestionBox']['SuccessClosed']);
+                window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/"+lang+"/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
 
-    }).catch(function(err) {  
-      console.log(err);  
-    });
+              }).catch(function(err) {  
+                console.log(err);  
+              });
+        }else{
+          $("#lbl_Innovate_first_comm_err").text(arrLang[lang]['SuggestionBox']['CommentMandatory']);
+        }
   }
   /*
   private getIsCurrentUserInGroup(userId,groupName)

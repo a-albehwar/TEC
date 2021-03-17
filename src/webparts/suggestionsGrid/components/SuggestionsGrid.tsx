@@ -15,7 +15,18 @@ export interface ISuggestionsGridStates{
   pageSize:number,
   itemCount:number,
 }
-
+enum statusValues {
+  Suggestioninitiated= 1,
+  InnovationteamReviwed = 2,
+  AssignedDeparmentApproved=3,
+  AssignedDeparmentRejected=4,
+  InnovationteamImplementationInprogress=5,
+  InnovationteamClosed=6,
+  Completed=7,
+  InnovationteamStandby=8,
+  SuggestionApprovedbyDepartmentHead =9,
+  SuggestionRejectedbyDepartmentHead=10
+}
 declare var arrLang: any;
 declare var lang: any;
 declare var surl: any;
@@ -197,7 +208,7 @@ export default class SuggestionsGrid extends React.Component<ISuggestionsGridPro
                            <tr>
                              <th data-breakpoints="xs">{arrLang[lang]['SuggestionBox']['Title']}</th>
                               <th data-breakpoints="xs">{arrLang[lang]['SuggestionBox']['Description']}</th>
-                              
+                              <th data-breakpoints="xs">{arrLang[lang]['SuggestionBox']['Status']}</th>
                               <th data-breakpoints="xs">{arrLang[lang]['SuggestionBox']['CreatedDate']}</th>
                               <th data-breakpoints="xs">{arrLang[lang]['SuggestionBox']['View']}</th>      
                            </tr>
@@ -211,6 +222,7 @@ export default class SuggestionsGrid extends React.Component<ISuggestionsGridPro
                           var Sugtitle=langcode=="en-US"?item.Title:item.Title_Ar;
                           var SugDescstr = langcode=="en-US"?item.Description:item.Description_Ar;
                           var SugStatusid = langcode=="en-US"?item.Suggestion_StatusId:item.Suggestion_StatusId;
+                          var SugStatusTitle=statusValues[SugStatusid];
                          /* {this.state.StatusListArray.map(function(statusitem,key){
                           console.log(st);
                           })}
@@ -224,6 +236,7 @@ export default class SuggestionsGrid extends React.Component<ISuggestionsGridPro
                             <tr>
                                 <td>{Sugtitle}</td>
                                 <td>{SugDescstr}</td>
+                                <td>{SugStatusTitle}</td>
                                 <td>{formatCreatedDate}</td>
                                 <td>
                                 <a href={viewurl}><img src={viewimgurl} className={"img-fluid"}/></a>
