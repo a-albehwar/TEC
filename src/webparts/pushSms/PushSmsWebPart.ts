@@ -19,7 +19,8 @@ export interface IPushSmsWebPartProps {
 }
 
 declare var arrLang: any;
-
+declare var lang: any;
+let MobileNumersArray: any[] = [];
 export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPartProps> {
 
   private Listname: string = "EmployeeSuggestions";
@@ -74,19 +75,19 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
 
   private Localization(): void {
     var lcid=this.context.pageContext.legacyPageContext['currentCultureLCID'];  
-    this.language=lcid==13313?"ar":"en";
-    $('#btnSubmit').text(arrLang[this.language]['PushSms']['Send']);
-    $('#idTitle').attr("placeholder", arrLang[this.language]['PushSms']['EnterMobileNumber']);
-    $('#idSubject').attr("placeholder", arrLang[this.language]['PushSms']['SubjectError']);
+    lang=lcid==13313?"ar":"en";
+    $('#btnSubmit').text(arrLang[lang]['PushSms']['Send']);
+    $('#idTitle').attr("placeholder", arrLang[lang]['PushSms']['EnterMobileNumber']);
+    $('#idSubject').attr("placeholder", arrLang[lang]['PushSms']['SubjectError']);
     //$('#idSuggestion').attr("placeholder", arrLang[this.language]['PushSms']['TypeMessagehere']);
-    $('#lblTitle').text(arrLang[this.language]['PushSms']['MobileNumber']);
-    $('#lblSuggestion').text(arrLang[this.language]['PushSms']['Message']);
-    $('#italic_Multimob').html(arrLang[this.language]['PushSms']['MultiNumNote']);
-    $('#lblSubject').text(arrLang[this.language]['PushSms']['Subject']);
+    $('#lblTitle').text(arrLang[lang]['PushSms']['MobileNumber']);
+    $('#lblSuggestion').text(arrLang[lang]['PushSms']['Message']);
+    $('#italic_Multimob').html(arrLang[lang]['PushSms']['MultiNumNote']);
+    $('#lblSubject').text(arrLang[lang]['PushSms']['Subject']);
 
-    $('#lbl_Language').text(arrLang[this.language]['PushSms']['Lang']);
-    $('#lbl_rb_Arabic').text(arrLang[this.language]['PushSms']['Arabic']);
-    $('#lbl_rb_English').text(arrLang[this.language]['PushSms']['English']);
+    $('#lbl_Language').text(arrLang[lang]['PushSms']['Lang']);
+    $('#lbl_rb_Arabic').text(arrLang[lang]['PushSms']['Arabic']);
+    $('#lbl_rb_English').text(arrLang[lang]['PushSms']['English']);
     
   }
 
@@ -102,7 +103,7 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
 
   private _validateDescription(value: string): string {
     if (value.length <= 0) {
-      return arrLang[this.language]['PushSms']['MessageError'];
+      return arrLang[lang]['PushSms']['MessageError'];
     }
     else {
       return " ";
@@ -110,15 +111,16 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
   }
   private _validateMobileNumber(value: string): string {
     if (value.length <= 0) {
-      return arrLang[this.language]['PushSms']['MobileError'];
+      return arrLang[lang]['PushSms']['MobileError'];
     }
     else {
+      MobileNumersArray = value.split(",");;
       return " ";
     }
   }
   private _validateSubject(value: string): string {
     if (value.length <= 0) {
-      return arrLang[this.language]['PushSms']['SubjectError'];
+      return arrLang[lang]['PushSms']['SubjectError'];
     }
     else {
       return " ";
@@ -142,7 +144,7 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
     $("#lbl_Langerr").empty();
     var isChecked = jQuery("input[name=language]:checked").val();
     if(isChecked!="L" && isChecked!="A"){
-      document.getElementById('lbl_Langerr').append(arrLang[this.language]['PushSms']['LangErr']);
+      document.getElementById('lbl_Langerr').append(arrLang[lang]['PushSms']['LangErr']);
     }
     const httpClientOptions: IHttpClientOptions = {
       headers: new Headers(),
@@ -152,76 +154,53 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
     };
    var msgsubject=(document.getElementById('idSubject')["value"]).trim();
    var msgdesc=(document.getElementById('idSuggestion')["value"]).trim();
-   var mobilenum=document.getElementById('idTitle')["value"];
-  
-   
-   
-    /*
-     //var url="https://apitec.azurewebsites.net/api/pushsms/Tourent/tour@321/"+msgsubject+"/"+msgdesc+"/"+mobilenum+"/"+selectedMsgLangVal;
-     var url="https://apitec.azurewebsites.net/api/pushsms/Tourent/tour@321/InfoText/"+msgdesc+"/"+mobilenum+"/"+selectedMsgLangVal;
-     this.context.spHttpClient
-     .get(url, SPHttpClient.configurations.v1,httpClientOptions)
-      //.get("http://62.215.226.164/fccsms.aspx?UID=Tourent&p=tour@321&S=InfoText&G=96565058449&M=Testmsg&L=L", SPHttpClient.configurations.v1,httpClientOptions)
-    .then((data: any): void => {
-    //return response.json().then((items: any): void => {
-      if(data.status==200 && data.statusText=="OK")
-      {
-      $("#lblDisplayMsg").empty();
-      document.getElementById('lblDisplayMsg').append(arrLang[this.language]['PushSms']['SuccessMessage']);
-      this.clear();
-      }
-      else{
-        $("#lblDisplayMsg").empty();
-     // document.getElementById('lblDisplayMsg').append(data.status);
-      }
-    }, (error: any): void => {
-      $("#lblDisplayMsg").empty();
-      document.getElementById('lblDisplayMsg').append(error);
-    });
- 
-    */
-   if(msgsubject!=null && msgdesc!=null && mobilenum!=null && isChecked!=null){
-     
-      var getJSON = function(url, callback) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.responseType = 'json';
-        
-        xhr.onload = function() {
-        
-            var status = xhr.status;
-            
-            if (status == 200) {
-                callback(null, xhr.response);
-            } else {
-                callback(status);
-            }
-        };
-        
-        xhr.send();
-    };
-    
-    getJSON('https://apitec.azurewebsites.net/api/pushsms/Tourent/tour@321/'+msgsubject+'/'+msgdesc+'/'+mobilenum+'/'+isChecked,  function(err, data) {
-        
-        if (err != null) {
-            console.log(err);
-            //alert(err);
-        } else {
-           console.log(data);
-            if(data.startsWith("00"))
-            {
-              alert(arrLang[this.language]['PushSms']['SuccessMessage']);
-            }
-            else{
-            alert(data);
-            }
-        }
-    });
-  }
-  else{
-    alert("Please fill mandatory fields");
-  }
 
+   //var mobilenum=document.getElementById('idTitle')["value"];
+  
+   for(var i=0; i<MobileNumersArray.length;i++){
+     var mn=MobileNumersArray[i];
+        if(msgsubject!=null && msgdesc!=null && mn!=null && isChecked!=null){
+          
+            var getJSON = function(url, callback) {
+              var xhr = new XMLHttpRequest();
+              xhr.open('GET', url, true);
+              xhr.responseType = 'json';
+              
+              xhr.onload = function() {
+              
+                  var status = xhr.status;
+                  
+                  if (status == 200) {
+                      callback(null, xhr.response);
+                  } else {
+                      callback(status);
+                  }
+              };
+              
+              xhr.send();
+          };
+          
+          getJSON('https://apitec.azurewebsites.net/api/pushsms/Tourent/tour@321/'+msgsubject+'/'+msgdesc+'/'+mn+'/'+isChecked,  function(err, data) {
+              
+              if (err != null) {
+                  console.log(err);
+                  //alert(err);
+              } else {
+                console.log(data);
+                  if(data.startsWith("00"))
+                  {
+                    alert(arrLang[lang]['PushSms']['SuccessMessage']);
+                  }
+                  else{
+                  alert(data);
+                  }
+              }
+          });
+        }
+        else{
+          alert("Please fill mandatory fields");
+        }
+  }
   }
 
   

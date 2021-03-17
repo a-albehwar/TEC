@@ -17,12 +17,17 @@ import "@pnp/sp/site-users/web";
 import { SiteGroups } from '@pnp/sp/site-groups';
 import * as $ from 'jquery';
 
+enum statusValues {
+  SuggestInitiated = 1,
+  InnovationTeamReviewd = 2,
+}
 
  
 export interface IViewSuggestionWebPartProps {
   description: string;
 }
 
+let groups: any[] = [];
 
 declare var arrLang: any;
 declare var lang: any;
@@ -35,8 +40,7 @@ export interface ISPLists
 {
   value: ISPList[];
 }
-let groups =  sp.web.currentUser.groups();
-console.log(groups);
+
 export interface ISPList 
 {
   Title: string;
@@ -92,15 +96,16 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     }
   }
   
+  
 
-  private async _checkUserInGroup(strGroup:string)
+  private  _checkUserInGroup(strGroup:string)
   {
 
     let InGroup:boolean = false;
     
  
     //const queryUrl = `${this.context.pageContext.site.absoluteUrl}/_api/web/currentuser/groups`;
-    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/currentuser/groups`, SPHttpClient.configurations.v1)
+   /* this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/currentuser/groups`, SPHttpClient.configurations.v1)
       .then(response => {
         return response.json()
           .then((items: any): void => {
@@ -118,8 +123,16 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
             }
           });
         
-        });   
-        return InGroup;
+        });   */
+        sp.web.currentUser.groups()
+          .then((groupsData) => {
+                    groupsData.forEach(group => {
+                      groups.push({Id: group.Id,Title: group.Title});
+                          if(strGroup== group.Title){InGroup=true;}
+                      });
+          });
+          
+          return InGroup;
   }
   
   private _externalJsUrl: string = "https://tecq8.sharepoint.com/sites/IntranetDev/Style%20Library/TEC/JS/CustomJs.js";
@@ -396,8 +409,12 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     `;
 
       
-      //this._checkUserInGroup("InnovationTeam");
+      //var statusdata=[];
+      //statusdata.push(this.GetServiceListData());
+      isinnovateteamMember=this._checkUserInGroup("InnovationTeam");
       //this._getListCustomerData("InnovationTeam");
+      alert(isinnovateteamMember);
+      
       
       this.DisableControlsBasedPermission();
       this.getMediaByID();
@@ -405,13 +422,21 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       this.setButtonsEventHandlers();
       this.getLogsByID();
      
-      
        
   }
-
-  private async DisableControlsBasedPermission()
+  
+  private GetServiceListData():Promise<any>  
+  { 
+      return sp.site.rootWeb.lists.getByTitle('LK_Suggestion_Status').items
+          .select('Title,ID').get().then(response => {
+              let preprocessedData;
+              preprocessedData=response.values;
+              return preprocessedData;
+          });
+  }
+  private  DisableControlsBasedPermission()
   {
-   const isexists=await this._getListCustomerData("InnovationTeam");
+   const isexists= this._getListCustomerData("InnovationTeam");
    //alert(isexists);
     for(var i=0;i<CurrentUsergroups.length;i++)
     {
@@ -422,10 +447,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       
     }
   }
-  public componentDidMount()
-  {
-    //this._getListCustomerData("InnovationTeam");
-  }
+ 
     private  async _getListCustomerData(strGroup:string)
     {    
       this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/currentuser/groups`, SPHttpClient.configurations.v1)
