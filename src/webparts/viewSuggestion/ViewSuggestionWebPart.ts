@@ -18,8 +18,16 @@ import { SiteGroups } from '@pnp/sp/site-groups';
 import * as $ from 'jquery';
 
 enum statusValues {
-  SuggestInitiated = 1,
-  InnovationTeamReviewd = 2,
+  Suggestioninitiated= 1,
+  InnovationteamReviwed = 2,
+  AssignedDeparmentApproved=3,
+  AssignedDeparmentRejected=4,
+  InnovationteamImplementationInprogress=5,
+  InnovationteamClosed=6,
+  Completed=7,
+  InnovationteamStandby=8,
+  SuggestionApprovedbyDepartmentHead =9,
+  SuggestionRejectedbyDepartmentHead=10
 }
 
  
@@ -58,6 +66,10 @@ export interface ISPList
   Author:{
     Title:string
   };
+  AssignedDepartment:{
+    Title:string,
+    ID:number
+  }
   User_JobTitle:string;
   User_Department:string;
 }
@@ -103,49 +115,36 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
 
     let InGroup:boolean = false;
     
- 
     //const queryUrl = `${this.context.pageContext.site.absoluteUrl}/_api/web/currentuser/groups`;
-   /* this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/currentuser/groups`, SPHttpClient.configurations.v1)
+     this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/currentuser/groups`, SPHttpClient.configurations.v1)
       .then(response => {
         return response.json()
-          .then((items: any): void => {
-            let listItems: ISPList[] = items["value"];
-            for(var i=0;i<listItems.length;i++)
-            {
-              if(listItems[i].Title !="SharingLinks.9b857bbf-2ae3-4a28-b7fe-599c89b01da6.OrganizationView.71abe19a-67c7-492a-949a-ba7901eef508"){
-                if(listItems[i].Title==strGroup)
-                {
-                  InGroup=true;  
-                  
-                }
-                break;
+          .then((items: any) => {
+            for(var i=0;i<items.value.length;i++){
+              groups.push(items.value[i].Title);
+              if(items.value[i].Title==strGroup){
+                InGroup=true;
               }
+              //break;
             }
+           
           });
-        
-        });   */
-        sp.web.currentUser.groups()
-          .then((groupsData) => {
-                    groupsData.forEach(group => {
-                      groups.push({Id: group.Id,Title: group.Title});
-                          if(strGroup== group.Title){InGroup=true;}
-                      });
-          });
-          
-          return InGroup;
+         
+        });   
+        //console.log(groups);
+        return InGroup;
   }
   
   private _externalJsUrl: string = "https://tecq8.sharepoint.com/sites/IntranetDev/Style%20Library/TEC/JS/CustomJs.js";
 
   // adding customjs file before render
   public onInit(): Promise<void> {
-    //console.log(`ViewSuggestionWebPart.onInit(): Entered.`);
-    
+
     let scriptTag: HTMLScriptElement = document.createElement("script");
     scriptTag.src = this._externalJsUrl;
     scriptTag.type = "text/javascript";
     document.getElementsByTagName("head")[0].appendChild(scriptTag);
-
+    isinnovateteamMember=this._checkUserInGroup("1-SuggestionsBoxDepartment");
     return Promise.resolve<void>();
   }
   private getLogsByID(){
@@ -184,7 +183,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     let anchorhtml: string ='';
     
                                                                                                       //?$select=*,ID,Suggestion_Status/ID,Suggestion_Status/Title&$expand=Suggestion_Status&$filter=ID eq 6
-    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items?$select=*,ID,Suggestion_Status/ID,Attachments,AttachmentFiles,Suggestion_Status/Title,Author/Title&$expand=Suggestion_Status,AttachmentFiles,Author&$filter=ID%20eq%20${vsid}`, SPHttpClient.configurations.v1)
+    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items?$select=*,ID,Suggestion_Status/ID,Attachments,AttachmentFiles,Suggestion_Status/Title,Author/Title,AssignedDepartment/Title,AssignedDepartment/ID&$expand=AssignedDepartment,Suggestion_Status,AttachmentFiles,Author&$filter=ID%20eq%20${vsid}`, SPHttpClient.configurations.v1)
       .then(response => {
         return response.json()
           .then((items: any): void => {
@@ -199,8 +198,10 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                var mediadesc=lang=="en"?items.value[0].Description: items.value[0].Description_Ar;
                var sugStatus=items.value[0].Suggestion_Status.Title;
                var sugCreatedBy=items.value[0].Author.Title;
-               var sugUserJobTitle=items.value[0].User_JobTitle;
-               var sugUserDept=items.value[0].User_Department;
+               var sugAssignedDeptTitle=items.value[0].AssignedDepartment.Title!=null?items.value[0].AssignedDepartment.Title:"";
+               var sugAssignedDeptID=items.value[0].AssignedDepartment.ID!=null?items.value[0].AssignedDepartment.ID:"";
+               var sugUserJobTitle=items.value[0].User_JobTitle!=null?items.value[0].User_JobTitle:"";
+               var sugUserDept=items.value[0].User_Department!=null?items.value[0].User_Department:"";
                var sugType=items.value[0].Suggestion_Type;
                if(items.value[0].AttachmentFiles.length>0){
                 for(var i=0;i<items.value[0].AttachmentFiles.length;i++){
@@ -210,8 +211,8 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                 
                 }
                }
-               statusid=items.Suggestion_StatusId;
-               if(statusid==9 || statusid==5){
+               statusid=items.value[0].Suggestion_StatusId;
+               if(statusid==9 || statusid==5 || statusid==7){
                   $( "#tab2" ).empty();
                   InnovateTabhtml += `
                           <div class="col-lg-12  mb-2">   
@@ -269,6 +270,10 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   <label id="lbl_Suggestion" class="form-label"> : `+mediadesc+`</label>
                 </div>
                 <div class="col-lg-12 mb-2">   
+                  <label id="lbl_Assigned_DeptHeader" class="form-label"> `+arrLang[lang]['SuggestionBox']['Department']+` </label>
+                  <label id="lbl_Assigned_Dept" class="form-label"> : `+sugAssignedDeptTitle+`</label>
+                </div>
+                <div class="col-lg-12 mb-2">   
                   <label id="lbl_Status_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['Status']+` </label>
                   <label id="lbl_Status" class="form-label"> : `+sugStatus+` </label>
                 </div>
@@ -299,12 +304,159 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
             
             const listContainer: Element = this.domElement.querySelector('#tab1');
             listContainer.innerHTML = html;
-            return statusid;
+           // disable controls based on statusid
+                if(statusid==statusValues.Suggestioninitiated){
+                  
+                  $('#deptfile').prop('disabled', true);
+               
+                  $('#txt_Department_Head_Comments').prop('disabled', true);
+                  $('#txt_Department_Comments').prop('disabled', true);
+                  //buttons hide
+                  $("#btn_Dept_Head_Approve").hide();
+                  $("#btn_Dept_Head_Reject").hide();
+                  $("#btn_Approve").hide();
+                  $("#btn_Reject").hide();
+                 
+                }
+                else if(statusid==statusValues.InnovationteamReviwed){
+                  $("#sel_Dept").off();
+                  $('#sel_Dept').prop('disabled', true);
+                  
+                  $('#Innovate_First_Comments').prop('disabled', true);
+                  $('#txt_Department_Head_Comments').prop('disabled', true);
+                  
+                  //buttons hide
+                  $("#btn_Dept_Head_Approve").hide();
+                  $("#btn_Dept_Head_Reject").hide();
+                 
+                  $("#btn_Assign_Dept").hide();
+                  $("#btn_Close").hide();
+                }
+                else if(statusid==statusValues.AssignedDeparmentApproved){
+                  $("#sel_Dept").off();
+                  $('#sel_Dept').prop('disabled', true);
+                  $('#deptfile').prop('disabled', true);
+                  $('#Innovate_First_Comments').prop('disabled', true);
+                
+                  $('#txt_Department_Comments').prop('disabled', true);
+                  //buttons hide
+                  
+                  $("#btn_Approve").hide();
+                  $("#btn_Reject").hide();
+                  $("#btn_Assign_Dept").hide();
+                  $("#btn_Close").hide();
+                }
+                else if(statusid==statusValues.AssignedDeparmentRejected){
+                 
+                  $('#deptfile').prop('disabled', true);
+                 
+                  $('#txt_Department_Head_Comments').prop('disabled', true);
+                  $('#txt_Department_Comments').prop('disabled', true);
+                  //buttons hide
+                  $("#btn_Dept_Head_Approve").hide();
+                  $("#btn_Dept_Head_Reject").hide();
+                  $("#btn_Approve").hide();
+                  $("#btn_Reject").hide();
+                  
+                 
+                }
+                else if(statusid==statusValues.InnovationteamImplementationInprogress){
+                   
+                 
+                  $('#deptfile').prop('disabled', true);
+                
+                  $('#txt_Department_Head_Comments').prop('disabled', true);
+                  $('#txt_Department_Comments').prop('disabled', true);
+                  //buttons hide
+                  $("#btn_Dept_Head_Approve").hide();
+                  $("#btn_Dept_Head_Reject").hide();
+                  $("#btn_Approve").hide();
+                  $("#btn_Reject").hide();
+                
+                }
+                else if(statusid==statusValues.InnovationteamClosed){
+                  
+                  $('#deptfile').prop('disabled', true);
+                  
+                  $('#txt_Department_Head_Comments').prop('disabled', true);
+                  $('#Innovate_Second_Comments').prop('disabled', true);
+                  $('#txt_Department_Comments').prop('disabled', true);
+                  //buttons hide
+                  $("#btn_Dept_Head_Approve").hide();
+                  $("#btn_Dept_Head_Reject").hide();
+                  $("#btn_Approve").hide();
+                  $("#btn_Reject").hide();
+                  $("#btn_Review_Close").hide();
+                  
+                  $("#btn_Submit").hide();
+                    // disabled radio button 
+                     $("input[name='language']").each(function(i) {
+                        $(this).attr('disabled', 'disabled');
+                     });
+                  
+                }
+                else if(statusid==statusValues.Completed){
+                 
+                  $('#deptfile').prop('disabled', true);
+                  $('#Innovate_Second_Comments').prop('disabled', true);
+                  $('#txt_Department_Head_Comments').prop('disabled', true);
+                  $('#txt_Department_Comments').prop('disabled', true);
+                  
+                  
+                  
+                  //buttons hide
+                  $("#btn_Dept_Head_Approve").hide();
+                  $("#btn_Dept_Head_Reject").hide();
+                  $("#btn_Approve").hide();
+                  $("#btn_Reject").hide();
+                  $("#btn_Review_Close").hide();
+                  $("#btn_Submit").hide();
+                  // disabled radio button 
+                   $("input[name='language']").each(function(i) {
+                      $(this).attr('disabled', 'disabled');
+                   });
+                  
+                }
+                else if(statusid==statusValues.InnovationteamStandby){
+                 
+                  $('#deptfile').prop('disabled', true);
+                  $('#txt_Department_Head_Comments').prop('disabled', true);
+                
+                  $('#txt_Department_Comments').prop('disabled', true);
+                  //buttons hide
+                  $("#btn_Dept_Head_Approve").hide();
+                  $("#btn_Dept_Head_Reject").hide();
+                  $("#btn_Approve").hide();
+                  $("#btn_Reject").hide();
+                  
+                }
+                else if(statusid==statusValues.SuggestionApprovedbyDepartmentHead){
+                  $('#deptfile').prop('disabled', true);
+                  $('#txt_Department_Head_Comments').prop('disabled', true);
+                
+                  $('#txt_Department_Comments').prop('disabled', true);
+                  //buttons hide
+                  $("#btn_Dept_Head_Approve").hide();
+                  $("#btn_Dept_Head_Reject").hide();
+                  $("#btn_Approve").hide();
+                  $("#btn_Reject").hide();
+                }
+                else if(statusid==statusValues.SuggestionRejectedbyDepartmentHead){
+                  $('#deptfile').prop('disabled', true);
+                  $('#txt_Department_Head_Comments').prop('disabled', true);
+                
+                  $('#txt_Department_Comments').prop('disabled', true);
+                  //buttons hide
+                  $("#btn_Dept_Head_Approve").hide();
+                  $("#btn_Dept_Head_Reject").hide();
+                  $("#btn_Approve").hide();
+                  $("#btn_Reject").hide();
+                }
           });
          
       });
+     
   }
-
   public render(): void {
     var lcid= this.context.pageContext.legacyPageContext['currentCultureLCID'];  
     lang=lcid==13313?"ar":"en";
@@ -411,18 +563,19 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       
       //var statusdata=[];
       //statusdata.push(this.GetServiceListData());
-      isinnovateteamMember=this._checkUserInGroup("InnovationTeam");
+      
       //this._getListCustomerData("InnovationTeam");
-      alert(isinnovateteamMember);
+      //alert(isinnovateteamMember);
       
       
-      this.DisableControlsBasedPermission();
+      //this.DisableControlsBasedPermission();
       this.getMediaByID();
       this.LoadDepartments();
       this.setButtonsEventHandlers();
       this.getLogsByID();
-     
-       
+      var Suggdept=$.inArray( "1-SuggestionsBoxDepartment", groups ) ;
+      var inteam=$.inArray( "InnovationTeam", groups ) ;
+      alert(Suggdept + inteam);
   }
   
   private GetServiceListData():Promise<any>  
@@ -456,12 +609,12 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
           .then((items: any): void => {
             
             let listItems: ISPList[] = items["value"];
-            Array.prototype.push.apply(CurrentUsergroups, listItems)
+            Array.prototype.push.apply(CurrentUsergroups, listItems);
            
-           /* for(var i=0;i<listItems.length;i++)
-            { CurrentUsergroups.push(listItems[i].Title);
+           /* for(var i=0;i<items.length;i++)
+            { 
 
-              if(listItems[i].Title !="SharingLinks.9b857bbf-2ae3-4a28-b7fe-599c89b01da6.OrganizationView.71abe19a-67c7-492a-949a-ba7901eef508"){
+              if(items[i].Title !="SharingLinks.9b857bbf-2ae3-4a28-b7fe-599c89b01da6.OrganizationView.71abe19a-67c7-492a-949a-ba7901eef508"){
                 if(listItems[i].Title==strGroup)
                 {
                   isinnovateteamMember=true;  
