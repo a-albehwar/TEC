@@ -33,10 +33,10 @@ export default class AttendanceWebPart extends BaseClientSideWebPart<IAttendance
       </div>`;
   }
 
-  protected get dataVersion(): Version {
+ /* protected get dataVersion(): Version {
     return Version.parse('1.0');
   }
-
+ */
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
     return {
       pages: [

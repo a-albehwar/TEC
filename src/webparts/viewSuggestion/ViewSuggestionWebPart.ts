@@ -37,7 +37,7 @@ export interface IViewSuggestionWebPartProps {
 }
 
 let groups: any[] = [];
-
+let deptdocurl:string;
 declare var arrLang: any;
 declare var lang: any;
 const url : any = new URL(window.location.href);
@@ -584,12 +584,21 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                    
            </div>
     `;
-
+      this.getRelatedDocuments();
       this.getMediaByID();
       this.LoadDepartments();
       this.setButtonsEventHandlers();
       this.getLogsByID();
      
+  }
+  private getRelatedDocuments(){
+    //https://tecq8.sharepoint.com/sites/IntranetDev/_api/web/Lists/GetByTitle('SuggestionBoxDocuments')/Items?$select=Suggestion_ID/ID,Folder/ServerRelativeUrl,ID,FileSystemObjectType,BaseName,Modified&$expand=Suggestion_ID&$filter=Suggestion_ID/ID%20eq%2083
+    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl} "/_api/web/Lists/GetByTitle('SuggestionBoxDocuments')/Items?$select=Suggestion_ID/ID,Folder/ServerRelativeUrl,ID,FileSystemObjectType,BaseName,Modified&$expand=Suggestion_ID&$filter=Suggestion_ID/ID%20eq%20+vsid +')`, SPHttpClient.configurations.v1)
+    .then(function (result) {
+        alert(result);
+    }).catch(function(err) {  
+      console.log(err);  
+    });
   }
   
   private setButtonsEventHandlers(): void {
