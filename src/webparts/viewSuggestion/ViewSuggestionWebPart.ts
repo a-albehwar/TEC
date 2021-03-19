@@ -6,7 +6,7 @@ import {
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { escape } from '@microsoft/sp-lodash-subset';
 
-import styles from './ViewSuggestionWebPart.module.scss';
+//import styles from './ViewSuggestionWebPart.module.scss';
 import * as strings from 'ViewSuggestionWebPartStrings';
 import {  SPHttpClient ,SPHttpClientResponse } from '@microsoft/sp-http'; 
 import * as moment from 'moment';
@@ -52,6 +52,7 @@ export interface ISPLists
 
 export interface ISPList 
 {
+  FileLeafRef:string;
   Title: string;
   Title_Ar:string;
   PublishedDate:Date;
@@ -71,6 +72,7 @@ export interface ISPList
     Title:string,
     ID:number,
   }
+  BaseName:string;
   User_JobTitle:string;
   User_Department:string;
   Assigned_Dept_Comments:string;
@@ -81,10 +83,13 @@ export interface ISPList
 
 export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSuggestionWebPartProps> {
   items: any;
-  
-  
+  private Suggdept:number;
+  private Sugdepthead:number;
+  private inteam:number;
+  private docanchorhtml: string ='';
   private Listname: string = "SuggestionsBox";
   private LogsListname: string = "SuggestionsBoxWorkflowLogs";
+  private DocLibraryName:string ="SuggestionBoxDocuments";
 
   private UploadFiles(itemid:string) {
     let input = <HTMLInputElement>document.getElementById("deptfile");
@@ -101,7 +106,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
              // get the item id of the file and then update the columns(properties)
             sp.site.rootWeb.lists.getByTitle("SuggestionBoxDocuments").items.getById(listItemAllFields.Id).update({
                         //Title: 'My New Title',
-                        Suggestion_IDId:itemid,
+                        Suggestion_IDId:parseInt(itemid),
             }).then(r=>{
                         console.log(file.name + " properties updated successfully!");
             });           
@@ -114,20 +119,56 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     let groups1 = await sp.web.currentUser.groups();
     let lkstsid=await sp.site.rootWeb.lists.getByTitle("SuggestionsBox").items.getById(vsid).select( "AssignedDepartment/ID").expand("AssignedDepartment").get();
     //alert(groups1);
+    if(groups1.length>0){
     for(var i=0;i<groups1.length;i++){
       groups.push(groups1[i].Title);
     }
-    var deptid=lkstsid.AssignedDepartment.ID;
-    if(groups.length>0)
-    {
-      var Suggdept=$.inArray( deptid+"-SuggestionsBoxDepartment", groups ) ;
-      var Sugdepthead=$.inArray( deptid+"-SuggestionsBoxDepartmentHead", groups ) ;//"1-SuggestionsBoxDepartmentHead"
-      var inteam=$.inArray( "InnovationTeam", groups ) ;
-      if(Suggdept<0&&Sugdepthead<0&&inteam<0){
-        alert(arrLang[lang]['SuggestionBox']['UnAuthorized']);
-        window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/"+lang+"/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
-      }
     }
+    if(lkstsid.AssignedDepartment!=null) {
+        var deptid=lkstsid.AssignedDepartment.ID;
+      
+        if(groups.length>0)
+        {
+          this.Suggdept=$.inArray( deptid+"-SuggestionsBoxDepartment", groups ) ;
+          this.Sugdepthead=$.inArray( deptid+"-SuggestionsBoxDepartmentHead", groups ) ;//"1-SuggestionsBoxDepartmentHead"
+          this.inteam=$.inArray( "InnovationTeam", groups ) ;
+          if(this.Suggdept<0&&this.Sugdepthead<0&&this.inteam<0){
+            alert(arrLang[lang]['SuggestionBox']['UnAuthorized']);
+            window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/"+lang+"/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+          }
+    }
+    else{
+
+    }
+      //disable tab controls based on user permission
+      
+    }
+    if(this.Suggdept<0){
+      $('#deptfile').prop('disabled', true); 
+      $('#txt_Department_Comments').prop('disabled', true);  
+      $("#btn_Approve").hide();
+      $("#btn_Reject").hide();     
+     }
+     if(this.Sugdepthead<0){
+      $("#btn_Dept_Head_Approve").hide();
+      $("#btn_Dept_Head_Reject").hide();
+      $('#txt_Department_Head_Comments').prop('disabled', true);
+     }
+     if(this.inteam<0){
+      $("#sel_Dept").off();
+      $('#sel_Dept').prop('disabled', true);
+      $('#Innovate_First_Comments').prop('disabled', true);
+      $('#Innovate_Second_Comments').prop('disabled', true);
+
+      $("#btn_Review_Close").hide();
+      $("#btn_Assign_Dept").hide();
+      $("#btn_Close").hide();
+      $("#btn_Submit").hide();
+        // disabled radio button 
+         $("input[name='language']").each(function(i) {
+            $(this).attr('disabled', 'disabled');
+         });
+     }
   }
 
   private _externalJsUrl: string = "https://tecq8.sharepoint.com/sites/IntranetDev/Style%20Library/TEC/JS/CustomJs.js";
@@ -140,7 +181,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
     scriptTag.type = "text/javascript";
     document.getElementsByTagName("head")[0].appendChild(scriptTag);
     isinnovateteamMember=this._checkUserInGroup("1-SuggestionsBoxDepartment");
-    console.log(isinnovateteamMember);
+    //console.log(isinnovateteamMember);
     return Promise.resolve<void>();
   }
   private getLogsByID(){
@@ -190,8 +231,8 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
               //if (item.ID === parseInt(vsid)) {
                 var momentObj = moment(items.value[0].Created);
                 var formatpubDate=momentObj.format('DD-MM-YYYY');
-               var mediatitle=lang=="en"?items.value[0].Title: items.value[0].Title_Ar;
-               var mediadesc=lang=="en"?items.value[0].Description: items.value[0].Description_Ar;
+               var mediatitle=items.value[0].Title;
+               var mediadesc=items.value[0].Description;
                var sugStatus=items.value[0].Suggestion_Status.Title;
                var sugCreatedBy=items.value[0].Author.Title;
                var sugAssignedDeptTitle=items.value[0].AssignedDepartmentId!=null?items.value[0].AssignedDepartment.Title:"";
@@ -201,6 +242,8 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                var sugType=items.value[0].Suggestion_Type;
                var sug_inn_team_first_comments=items.value[0].Innovation_Team_Review!=null?items.value[0].Innovation_Team_Review:"";
                var sug_Assign_dept_comments=items.value[0].Assigned_Dept_Comments!=null?items.value[0].Assigned_Dept_Comments:"";
+               var sug_Assign_dept_head_comments=items.value[0].Dept_Head_Comments!=null?items.value[0].Dept_Head_Comments:"";
+               var sug_inn_second_comments=items.value[0].Innovation_Team_Review!=null?items.value[0].Innovation_Team_Review:"";
                if(items.value[0].AttachmentFiles.length>0){
                 for(var i=0;i<items.value[0].AttachmentFiles.length;i++){
                   var anchorfileURL=this.context.pageContext.site.absoluteUrl+"/Lists/SuggestionsBox/Attachments/"+vsid+"/"+items.value[0].AttachmentFiles[i].FileNameAsPath.DecodedUrl+"?web=1";
@@ -217,12 +260,12 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                           <label id="lbl_Status_Header" class="form-label">`+arrLang[lang]['SuggestionBox']['Status']+`</label>
                           </div>  
                           <div class="col-lg-12 mb-2 vleft">
-                            <input type="radio" id="rb_arabic" name="language" class="form-control" value="8">
-                            <label for="arabic" id="lbl_rb_Arabic" class="form-label">`+arrLang[lang]['SuggestionBox']['StandBy']+`</label><br>
-                            <input type="radio" id="rb_english" name="language" class="form-control" value="5">
-                            <label for="english"  id="lbl_rb_English" class="form-label">`+arrLang[lang]['SuggestionBox']['InProgress']+`</label><br>
-                            <input type="radio" id="rb_eng" name="language" class="form-control" value="7">
-                            <label for="english"  id="lbl_rb_English" class="form-label">`+arrLang[lang]['SuggestionBox']['Completed']+`</label><br>
+                            <input type="radio" id="rb_standBy" name="language" class="form-control" value="8">
+                            <label for="arabic" id="lbl_rb_standBy" class="form-label">`+arrLang[lang]['SuggestionBox']['StandBy']+`</label><br>
+                            <input type="radio" id="rb_InProgress" name="language" class="form-control" value="5">
+                            <label for="english"  id="lbl_rb_InProgress" class="form-label">`+arrLang[lang]['SuggestionBox']['InProgress']+`</label><br>
+                            <input type="radio" id="rb_Completed" name="language" class="form-control" value="7">
+                            <label for="english"  id="lbl_rb_Completed" class="form-label">`+arrLang[lang]['SuggestionBox']['Completed']+`</label><br>
                             <label id="lbl_Langerr" class="form-label" style="color:red"></label>
                           </div>
                           <div class="col-lg-12 mb-2">   
@@ -238,6 +281,34 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   InnovateTabContainer.innerHTML = InnovateTabhtml;
                   document.getElementById('btn_Submit').addEventListener('click',(e)=>{ e.preventDefault();this.InnovationTeamSubmited($("input[name=language]:checked").val())});    
                }
+               else if(statusid==8){
+                $( "#tab2" ).empty();
+                InnovateTabhtml += `
+                        <div class="col-lg-12  mb-2">   
+                        <label id="lbl_Status_Header" class="form-label">`+arrLang[lang]['SuggestionBox']['Status']+`</label>
+                        </div>  
+                        <div class="col-lg-12 mb-2 vleft">
+                          <input type="radio" id="rb_standBy" name="language" class="form-control" value="8">
+                          <label for="arabic" id="lbl_rb_standBy" class="form-label">`+arrLang[lang]['SuggestionBox']['StandBy']+`</label><br>
+                          <input type="radio" id="rb_InProgress" name="language" class="form-control" value="5">
+                          <label for="english"  id="lbl_rb_InProgress" class="form-label">`+arrLang[lang]['SuggestionBox']['InProgress']+`</label><br>
+                          <input type="radio" id="rb_Completed" name="language" class="form-control" value="7">
+                          <label for="english"  id="lbl_rb_Completed" class="form-label">`+arrLang[lang]['SuggestionBox']['Completed']+`</label><br>
+                          <label id="lbl_Langerr" class="form-label" style="color:red"></label>
+                        </div>
+                        <div class="col-lg-12 mb-2">   
+                          <label id="lbl_Innovation_Second_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['Comments']+` </label>
+                          <textarea style="height:auto !important" rows="5" cols="5" id="Innovate_Second_Comments" class="form-control" name="InnovateTeamCommnents"></textarea>
+                        </div>
+                        <div class="col-lg-4  mb-2">   
+                        <button class="red-btn shadow-sm  mt-4" id="btn_Submit"> <span>`+arrLang[lang]['SuggestionBox']['Submit']+`</span></button>
+                        </div>
+                `;
+                InnovateTabhtml += '</div></div>';
+                const InnovateTabContainer: Element = this.domElement.querySelector('#tab2');
+                InnovateTabContainer.innerHTML = InnovateTabhtml;
+                document.getElementById('btn_Submit').addEventListener('click',(e)=>{ e.preventDefault();this.InnovationTeamSubmited($("input[name=language]:checked").val())});    
+             }
                else if(statusid==4 || statusid==10){
                   $( "#tab2" ).empty();
                   InnovateTabhtml += `
@@ -361,8 +432,6 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   $('#txt_Department_Comments').val(sug_Assign_dept_comments);
                   $('#txt_Department_Comments').prop('disabled', true);
                   $('#div_dept_files').show();
-                  //div_dept_files
-                  //buttons hide
                   $("#btn_Dept_Head_Approve").hide();
                   $("#btn_Dept_Head_Reject").hide();
                   $("#btn_Approve").hide();
@@ -382,14 +451,17 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   $("#btn_Dept_Head_Reject").hide();
                   $("#btn_Approve").hide();
                   $("#btn_Reject").hide();
-                
+                  $('#txt_Department_Comments').val(sug_Assign_dept_comments);
+                  $('#txt_Department_Head_Comments').val(sug_Assign_dept_head_comments);
+                  $('#Innovate_Second_Comments').val(sug_inn_second_comments);
+                  $("#rb_InProgress").prop("checked", true);
                 }
                 else if(statusid==statusValues.InnovationteamClosed){
                   $('#sel_Dept').val(sugAssignedDeptID);
                   $("#sel_Dept").off();
                   $('#sel_Dept').prop('disabled', true);
-                  
-                  
+                  $('#Innovate_Second_Comments').val(sug_inn_second_comments);
+                  $('#Innovate_Second_Comments').prop('disabled', true);
                   $('#Innovate_First_Comments').val(sug_inn_team_first_comments);
                   $('#Innovate_First_Comments').prop('disabled', true);
 
@@ -418,14 +490,16 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   
                 }
                 else if(statusid==statusValues.Completed){
-                 
+                  $('#div_dept_files').show();
                   $('#deptfile').prop('disabled', true);
                   $('#Innovate_Second_Comments').prop('disabled', true);
                   $('#txt_Department_Head_Comments').prop('disabled', true);
                   $('#txt_Department_Comments').prop('disabled', true);
-                  
-                  
-                  
+                  $('#txt_Department_Comments').val(sug_Assign_dept_comments);
+                  $('#txt_Department_Head_Comments').prop('disabled', true);
+                  $('#txt_Department_Head_Comments').val(sug_Assign_dept_head_comments);
+                  $('#Innovate_Second_Comments').val(sug_inn_second_comments);
+                  $('#Innovate_Second_Comments').prop('disabled', true);
                   //buttons hide
                   $("#btn_Dept_Head_Approve").hide();
                   $("#btn_Dept_Head_Reject").hide();
@@ -437,24 +511,29 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                    $("input[name='language']").each(function(i) {
                       $(this).attr('disabled', 'disabled');
                    });
+                   $("#rb_Completed").prop("checked", true);
                   
                 }
                 else if(statusid==statusValues.InnovationteamStandby){
-                 
+                  $('#div_dept_files').show();
                   $('#deptfile').prop('disabled', true);
                   $('#txt_Department_Head_Comments').prop('disabled', true);
-                
+                  $('#txt_Department_Head_Comments').val(sug_Assign_dept_head_comments);
+                  $('#Innovate_Second_Comments').val(sug_inn_second_comments);
                   $('#txt_Department_Comments').prop('disabled', true);
                   //buttons hide
                   $("#btn_Dept_Head_Approve").hide();
                   $("#btn_Dept_Head_Reject").hide();
                   $("#btn_Approve").hide();
                   $("#btn_Reject").hide();
-                  
+                  $('#txt_Department_Comments').val(sug_Assign_dept_comments);
+                  $("#rb_standBy").prop("checked", true);
                 }
                 else if(statusid==statusValues.SuggestionApprovedbyDepartmentHead){
                   $('#deptfile').prop('disabled', true);
                   $('#txt_Department_Head_Comments').prop('disabled', true);
+                  $('#txt_Department_Head_Comments').val(sug_Assign_dept_head_comments);
+                  $('#div_dept_files').show();
                 
                   $('#txt_Department_Comments').prop('disabled', true);
                   //buttons hide
@@ -462,17 +541,20 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                   $("#btn_Dept_Head_Reject").hide();
                   $("#btn_Approve").hide();
                   $("#btn_Reject").hide();
+                  $('#txt_Department_Comments').val(sug_Assign_dept_comments);
                 }
                 else if(statusid==statusValues.SuggestionRejectedbyDepartmentHead){
+                  $('#div_dept_files').show();
                   $('#deptfile').prop('disabled', true);
                   $('#txt_Department_Head_Comments').prop('disabled', true);
-                
+                  $('#txt_Department_Comments').val(sug_Assign_dept_comments);
                   $('#txt_Department_Comments').prop('disabled', true);
                   //buttons hide
                   $("#btn_Dept_Head_Approve").hide();
                   $("#btn_Dept_Head_Reject").hide();
                   $("#btn_Approve").hide();
                   $("#btn_Reject").hide();
+                  $('#txt_Department_Head_Comments').val(sug_Assign_dept_head_comments);
                 }
           });
          
@@ -534,7 +616,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                         </div>  
                         <div class="col-lg-12 mb-2" id="div_dept_files" style="display:none">   
                           <label id="lbl_Exist_Attach_Header" class="form-label">`+arrLang[lang]['SuggestionBox']['ExistingAttachment']+`</label>
-                          <a href="#">Attachment Links</a>
+                          <div id="div_exist_attachments"></div>
                         </div>
                         <div class="col-lg-12 mb-2">   
                           <label id="lbl_Comments_Header" class="form-label"> `+arrLang[lang]['SuggestionBox']['Comments']+` </label>
@@ -589,16 +671,31 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       this.LoadDepartments();
       this.setButtonsEventHandlers();
       this.getLogsByID();
+ 
      
   }
+
   private getRelatedDocuments(){
-    //https://tecq8.sharepoint.com/sites/IntranetDev/_api/web/Lists/GetByTitle('SuggestionBoxDocuments')/Items?$select=Suggestion_ID/ID,Folder/ServerRelativeUrl,ID,FileSystemObjectType,BaseName,Modified&$expand=Suggestion_ID&$filter=Suggestion_ID/ID%20eq%2083
-    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl} "/_api/web/Lists/GetByTitle('SuggestionBoxDocuments')/Items?$select=Suggestion_ID/ID,Folder/ServerRelativeUrl,ID,FileSystemObjectType,BaseName,Modified&$expand=Suggestion_ID&$filter=Suggestion_ID/ID%20eq%20+vsid +')`, SPHttpClient.configurations.v1)
-    .then(function (result) {
-        alert(result);
-    }).catch(function(err) {  
-      console.log(err);  
-    });
+    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/Lists/GetByTitle('SuggestionBoxDocuments')/Items?$select=Suggestion_ID/ID,Folder/ServerRelativeUrl,FileLeafRef,ID,FileSystemObjectType,BaseName,Modified&$expand=Suggestion_ID&$filter=Suggestion_ID/ID%20eq%20`+vsid, SPHttpClient.configurations.v1)
+    .then(response => {
+      return response.json()
+        .then((items: any): void => {
+          if(items["value"].length>0){
+          let listItems: ISPList[] = items["value"];
+            for(var i=0;i<listItems.length;i++)
+              {
+                var anchorDocURL=this.context.pageContext.site.absoluteUrl+"/SuggestionBoxDocuments/"+listItems[0].FileLeafRef;
+                this.docanchorhtml+='<a href="'+anchorDocURL+'">'+listItems[0].BaseName+'</a><br>';
+              }
+               $("#div_exist_attachments").html(this.docanchorhtml);
+          }
+          else{
+            this.docanchorhtml+='<a href="#">No Attachments</a><br>';
+            $("#div_exist_attachments").html(this.docanchorhtml);
+          }
+        });
+       });  
+     
   }
   
   private setButtonsEventHandlers(): void {
@@ -666,12 +763,11 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
       console.log(err);  
     });
   }
-
   
   private LoadDepartments():void{
     sp.site.rootWeb.lists.getByTitle("LK_Departments").items.select("Title","ID").get()
     .then(function (data) {
-      console.log(data);
+      //console.log(data);
       for (var k in data) {
         //alert(data[k].Title);
         $("#sel_Dept").append("<option value=\"" +data[k].ID + "\">" +data[k].Title + "</option>");
@@ -816,28 +912,7 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
           $("#lbl_Innovate_first_comm_err").text(arrLang[lang]['SuggestionBox']['CommentMandatory']);
         }
   }
-  /*
-  private getIsCurrentUserInGroup(userId,groupName)
-  {
-      var isMember = false;
-           var url = this.siteurl + "/_api/web/sitegroups/getByName('"+ groupName +"')/Users?$filter=Id eq "+ userId ;
-            this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/sitegroups/getByName('"+ groupName +"')/Users?$filter=Id eq "+ userId +')`, SPHttpClient.configurations.v1)
-            .then(function (result) {
-                
-              
-            
-            });
-
-            return isMember;
-            
-   }
-  */
-
-  /*
-  protected get dataVersion(): Version {
-    return Version.parse('1.0');
-  }
-  */
+  
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
     return {
       pages: [

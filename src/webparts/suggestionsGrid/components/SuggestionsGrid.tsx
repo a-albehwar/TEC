@@ -219,8 +219,8 @@ export default class SuggestionsGrid extends React.Component<ISuggestionsGridPro
                             //&$select=ID,Title,Title_Ar,Description,Description_Ar,Suggestion_StatusTitle/Suggestion_Status&$expand=Suggestion_Status
                           var momentObj = moment(item.Created);
                           var formatCreatedDate=momentObj.format('DD-MM-YYYY');
-                          var Sugtitle=langcode=="en-US"?item.Title:item.Title_Ar;
-                          var SugDescstr = langcode=="en-US"?item.Description:item.Description_Ar;
+                          var Sugtitle=langcode=="en-US"?item.Title:item.Title;
+                          var SugDescstr = langcode=="en-US"?item.Description:item.Description;
                           var SugStatusid = langcode=="en-US"?item.Suggestion_StatusId:item.Suggestion_StatusId;
                           var SugStatusTitle=statusValues[SugStatusid];
                          /* {this.state.StatusListArray.map(function(statusitem,key){
@@ -278,7 +278,7 @@ export default class SuggestionsGrid extends React.Component<ISuggestionsGridPro
           var searchurl=`${surl}/_api/web/lists/GetByTitle('SuggestionsBox')/items?$filter=substringof('${searchKeyword}',Title)`;
       }
       else{
-        var searchurl=`${surl}/_api/web/lists/GetByTitle('SuggestionsBox')/items?$filter=substringof('${searchKeyword}',Title_Ar)`;
+        var searchurl=`${surl}/_api/web/lists/GetByTitle('SuggestionsBox')/items?$filter=substringof('${searchKeyword}',Title)`;
       }
        console.log(searchurl);
     

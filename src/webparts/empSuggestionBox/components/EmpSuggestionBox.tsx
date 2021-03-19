@@ -227,9 +227,10 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
        else if(lang=="ar")
        {
             sp.site.rootWeb.lists.getByTitle("SuggestionsBox").items.add({
-              Title_Ar: sug_title,
+              //Title_Ar: sug_title,
               Title:  sug_title,
-              Description_Ar:sug_Desc,
+              Description:sug_Desc,
+              //Description_Ar:sug_Desc,
               Suggestion_StatusId: 1,
               Suggestion_Type:sug_Type,
               User_JobTitle:this.userJobTilte,
