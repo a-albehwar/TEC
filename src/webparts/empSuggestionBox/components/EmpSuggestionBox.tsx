@@ -32,6 +32,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
   private language:string;
   private userDepartment:string;
   private userJobTilte:string;
+  private DocLibraryName:string="SuggestionBoxDocuments";
   public constructor(props) {
     super(props);
     this.state = {     
@@ -218,8 +219,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
             }).then(r=>{
               r.item.attachmentFiles.addMultiple(fileInfos);
               this.updateLogs(r.data.Id);
-              alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
-              window.location.href=this.props.weburl;
+            
             }).catch(function(err) {  
               console.log(err);  
           });
@@ -238,8 +238,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
             }).then(r=>{
               r.item.attachmentFiles.addMultiple(fileInfos);
               this.updateLogs(r.data.Id);
-              alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
-              window.location.href=this.props.weburl;
+          
             }).catch(function(err) {  
               console.log(err);  
           });
@@ -259,38 +258,40 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
       SuggestionIDId: ITEMID,
       StatusId:1,
     }).then(iar => {
-      console.log(iar);
+      //console.log(iar);
+      this.CheckAndCreateFolder(ITEMID);
     }).catch((error:any) => {
       console.log("Error: ", error);
     });
     // add an item to the list
     
   }
-  private createItem(item): void {  
-    const body: string = JSON.stringify({  
-      'Title': `${item}`, 
-      'SuggestionIDId':`${item}`,
-      'StatusId':1, 
-    });  
-    
-    this.context.spHttpClient.post(`${this.context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('SuggestionsBoxWorkflowLogs')/items`,  
-    SPHttpClient.configurations.v1,  
-    {  
-      headers: {  
-        'Accept': 'application/json;odata=nometadata',  
-        'Content-type': 'application/json;odata=nometadata',  
-        'odata-version': ''  
-      },  
-      body: body  
-    })  
-    .then((response: SPHttpClientResponse): Promise<IListItem> => {  
-      return response.json();  
-    })  
-    .then((item: IListItem): void => {  
-      console.log(`Item '${item.Title}' (ID: ${item.Id}) successfully created`);  
-    }, (error: any): void => {  
-      console.log('Error while creating the item: ' + error);  
-    });  
-  }  
+  private CheckAndCreateFolder(newid:string)
+  {   
+    var folderUrl=this.DocLibraryName+"/"+ newid;
+    sp.site.rootWeb.getFolderByServerRelativeUrl(folderUrl).select('Exists').get().then(data => {
+      console.log(data.Exists);
+      if(data.Exists)
+      {
+        console.log("Folder already exists.");
+      }
+      else{
+        sp.site.rootWeb.folders.add(folderUrl).then(data => {
+          console.log("Created Folder successfully.");
+          alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
+          window.location.href=this.props.weburl;
+        }).catch(err => {
+          console.log("Error while creating folder");
+        });
+      }
+     
+    }).catch(err => {
+        console.log("Error While fetching Folder");
+        
+    });
+  
+ 
+  }
+ 
   
 }
