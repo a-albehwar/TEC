@@ -202,10 +202,10 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
             var logComments=item.Comments!=undefined?item.Comments:"";
             historybody += `
             <tr>
-                <td>`+logstatus+`</td>
-                <td>`+logComments+`</td>
-                <td>`+logformatpubDate+`</td>
                 <td>`+logAuthor+`</td>
+                <td>`+logComments+`</td>
+                <td>`+logstatus+`</td>
+                <td>`+logformatpubDate+`</td>
             </tr>`;
           });
           const HistoryBodyContainer: Element = this.domElement.querySelector('#tbl_tb_history');
@@ -654,10 +654,10 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
                           <table class="table table-bordered table-hover footable">
                             <thead>
                                 <tr>
-                                  <th data-breakpoints="xs"> `+arrLang[lang]['SuggestionBox']['Status']+`</th>
-                                  <th data-breakpoints="xs"> `+arrLang[lang]['SuggestionBox']['Comments']+`</th>
-                                  <th data-breakpoints="xs"> `+arrLang[lang]['SuggestionBox']['ActionDate']+`</th>
                                   <th data-breakpoints="xs"> `+arrLang[lang]['SuggestionBox']['ApprovedBy']+`</th>
+                                  <th data-breakpoints="xs"> `+arrLang[lang]['SuggestionBox']['Comments']+`</th>
+                                  <th data-breakpoints="xs"> `+arrLang[lang]['SuggestionBox']['Status']+`</th>
+                                  <th data-breakpoints="xs"> `+arrLang[lang]['SuggestionBox']['ActionDate']+`</th>
                                 </tr>
                             </thead>
                             <tbody id="tbl_tb_history">
