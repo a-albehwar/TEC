@@ -97,18 +97,21 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
    // var files = document.getElementById('deptfile');
    
     if (file!=undefined || file!=null){
-
+    var folderUrl=this.context.pageContext.site.serverRelativeUrl+"/"+this.DocLibraryName+"/"+itemid;
     //assuming that the name of document library is Documents, change as per your requirement, 
     //this will add the file in root folder of the document library, if you have a folder named test, replace it as "/Documents/test"
-    sp.site.rootWeb.getFolderByServerRelativeUrl("/sites/IntranetDev/SuggestionBoxDocuments").files.add(file.name, file, true).then((result) => {
+    sp.site.rootWeb.getFolderByServerRelativeUrl(folderUrl).files.add(file.name, file, true).then((result) => {
         console.log(file.name + " upload successfully!");
           result.file.listItemAllFields.get().then((listItemAllFields) => {
              // get the item id of the file and then update the columns(properties)
-            sp.site.rootWeb.lists.getByTitle("SuggestionBoxDocuments").items.getById(listItemAllFields.Id).update({
+            sp.site.rootWeb.lists.getByTitle(this.DocLibraryName).items.getById(listItemAllFields.Id).update({
                         //Title: 'My New Title',
                         Suggestion_IDId:parseInt(itemid),
-            }).then(r=>{
+            })
+            .then(r=>{
                         console.log(file.name + " properties updated successfully!");
+                        alert(arrLang[lang]['SuggestionBox']['SuccessApproved']);
+              window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/"+lang+"/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
             });           
         }); 
     });
@@ -684,8 +687,8 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
           let listItems: ISPList[] = items["value"];
             for(var i=0;i<listItems.length;i++)
               {
-                var anchorDocURL=this.context.pageContext.site.absoluteUrl+"/SuggestionBoxDocuments/"+listItems[0].FileLeafRef;
-                this.docanchorhtml+='<a href="'+anchorDocURL+'">'+listItems[0].BaseName+'</a><br>';
+                var anchorDocURL=this.context.pageContext.site.absoluteUrl+"/SuggestionBoxDocuments/"+vsid+"/"+listItems[i].FileLeafRef;
+                this.docanchorhtml+='<a href="'+anchorDocURL+'">'+listItems[i].BaseName+'</a><br>';
               }
                $("#div_exist_attachments").html(this.docanchorhtml);
           }
@@ -833,8 +836,8 @@ export default class ViewSuggestionWebPart extends BaseClientSideWebPart<IViewSu
             }).then(r=>{
               this.updateLogs(vsid,3,$("#txt_Department_Comments").val());
               this.UploadFiles(vsid);
-              alert(arrLang[lang]['SuggestionBox']['SuccessApproved']);
-              window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/"+lang+"/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
+              //alert(arrLang[lang]['SuggestionBox']['SuccessApproved']);
+              //window.location.href="https://tecq8.sharepoint.com/sites/IntranetDev/"+lang+"/Pages/TecPages/EmployeeSuggestions/AllSuggestions.aspx";
             }).catch(function(err) {  
               console.log(err);  
             });
