@@ -23,6 +23,16 @@ const displayStyle = {
   display: 'none',
 };
 
+const sectiontop={
+  marginTop: '-60px',
+}
+
+const textareaStyle= {
+  height: '140px',
+  background: '#fff',
+  border: 'solid 1px #d1d1d1 !important',
+  fontSize: '16px',
+}
 export interface IListItem {  
   Title?: string;  
   Id: number;  
@@ -73,51 +83,73 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
     var langcode=this.props.pagecultureId;
     lang=langcode=="en-US"?"en":"ar";
     return (
-      
-        <div>
-            <div className={"col-lg-4  mb-2"}>
-                <label id="lbl_Sug_Type" className={"form-label"}>{arrLang[lang]['SuggestionBox']['SugType']}<span  style={errormsgStyle}>*</span></label>
+      <div>
+      <section className={"inner-page-cont"} style={sectiontop}>
+
+      <div className={"container-fluid mt-5"}>
+          <div className={"col-md-10 mx-auto col-12"}>
+              <div className={"row user-info"}>
+                  <h3 className={"mb-4 col-12"}>NEW SUGGESTION REQUEST</h3>
+                  <div className={"col-md-12 col-12 mb-4"}>
+                      <p id="lbl_Sug_Type">{arrLang[lang]['SuggestionBox']['SugType']}<span  style={errormsgStyle}>*</span></p>
+                      <div className="vleft">
+                          <input type="radio" id="rb_money" name="suggestionType" className={"form-control"} value="Save Money" onChange={this.handleradioClick}></input>
+                          <label  id="lbl_money" className={"form-label"}>{arrLang[lang]['SuggestionBox']['SaveMoney']}</label>
+                          <input type="radio" id="rb_security" name="suggestionType" className={"form-control"} value="Improve Safety" onChange={this.handleradioClick}></input>
+                          <label   id="lbl_security" className={"form-label"}>{arrLang[lang]['SuggestionBox']['ImproveSecurity']}</label><br></br>
+                          <input type="radio" id="rb_efficency" name="suggestionType" className={"form-control"} value="Improve Efficiency" onChange={this.handleradioClick}></input>
+                          <label id="lbl_Efficency" className={"form-label"}>{arrLang[lang]['SuggestionBox']['ImporveEfficiency']}</label>
+                          <input type="radio" id="rb_other" name="suggestionType" className={"form-control"} value="Other" onChange={this.handleradioClick}></input>
+                          <label id="lbl_Other" className={"form-label"}>{arrLang[lang]['SuggestionBox']['Other']}</label><br></br>              
+                      </div>
+                      <label id="lbl_SugTypeerr" className={"form-label"}  style={errormsgStyle}></label>
+                  </div>
+                  <div id='div_other' className={"col-lg-4  mb-2"} style={displayStyle}>
+                    <p id="lbl_Other">{arrLang[lang]['SuggestionBox']['Other']}<span  style={errormsgStyle}>*</span></p>                 
+                    <input type="text" id="txt_other" className={"form-control"} name="other" placeholder={arrLang[lang]['SuggestionBox']['Other']}/>
+                  </div>
+                  <div className="col-md-12 col-12 mb-4">
+                      <p>{arrLang[lang]['SuggestionBox']['Title']}<span  style={errormsgStyle}>*</span></p>
+                      <textarea id="idTitle"  style={textareaStyle} cols={115} rows={10}  name="Suggesstiontitle" placeholder={arrLang[lang]['SuggestionBox']['Title']}></textarea>
+                      <label id="lbl_subjecterr" className={"form-label"}  style={errormsgStyle}></label>
+                  </div>
+                  <div className={"col-md-12 col-12 mb-4"}>
+                      <p>{arrLang[lang]['SuggestionBox']['Description']} <span  style={errormsgStyle}>*</span></p>
+                      <textarea id="idSuggestion" style={textareaStyle} cols={115} rows={10}  name="Suggesstion" placeholder={arrLang[lang]['SuggestionBox']['TypeMessagehere']}></textarea>
+                      <label id="lbl_suggestionerr" className={"form-label"} style={errormsgStyle}></label>
+                  </div>
+                  
+                  <div className={"col-md-4 col-12 mb-4"}>
+                      <p>{arrLang[lang]['SuggestionBox']['Attachment']}</p>
+                      <div className="input-group">
+                        <input type="text" name="filename" className={"form-control"} placeholder={"No file selected"} id="file_input"/>
+                        <span className={"input-group-btn"}>
+                            <div className={"btn file-btn custom-file-uploader"}>
+                            <input type="file" className={"form-control"} id="file" onChange={this.addFile.bind(this)} />
+                                Select a file
+                            </div>
+                        </span>
+                      </div>
+                      
+                  </div>
+                </div>
             </div>
-            <div className="col-lg-6 mb-2 vleft">
-                <input type="radio" id="rb_money" name="suggestionType" className={"form-control"} value="Save Money" onChange={this.handleradioClick}></input>
-                <label  id="lbl_money" className={"form-label"}>{arrLang[lang]['SuggestionBox']['SaveMoney']}</label>
-                <input type="radio" id="rb_security" name="suggestionType" className={"form-control"} value="Improve Safety" onChange={this.handleradioClick}></input>
-                <label   id="lbl_security" className={"form-label"}>{arrLang[lang]['SuggestionBox']['ImproveSecurity']}</label><br></br>
-                <input type="radio" id="rb_efficency" name="suggestionType" className={"form-control"} value="Improve Efficiency" onChange={this.handleradioClick}></input>
-                <label id="lbl_Efficency" className={"form-label"}>{arrLang[lang]['SuggestionBox']['ImporveEfficiency']}</label>
-                <input type="radio" id="rb_other" name="suggestionType" className={"form-control"} value="Other" onChange={this.handleradioClick}></input>
-                <label id="lbl_Other" className={"form-label"}>{arrLang[lang]['SuggestionBox']['Other']}</label><br></br>              
-                <label id="lbl_SugTypeerr" className={"form-label"}  style={errormsgStyle}></label>
-            </div>
-            <div id='div_other' className={"col-lg-4  mb-2"} style={displayStyle}>
-              <label id="lbl_Other" className={"form-label"}>{arrLang[lang]['SuggestionBox']['Other']}<span  style={errormsgStyle}>*</span></label>                 
-              <input type="text" id="txt_other" className={"form-control"} name="other" placeholder={arrLang[lang]['SuggestionBox']['Other']}/>
-            </div>
-           <div className={"col-lg-4  mb-2"}>  
-               <label id="lblTitle" className={"form-label"}> {arrLang[lang]['SuggestionBox']['Title']} <span style={errormsgStyle}>*</span></label>
-               <input type="text" id="idTitle" className={"form-control"} name="Title" placeholder={arrLang[lang]['SuggestionBox']['Title']} />
-               <label id="lbl_subjecterr" className={"form-label"}  style={errormsgStyle}></label>
-            </div>
-            <div className={"col-lg-4  mb-2"}>
-                <label id="lblSuggestion" className={"form-label"}> {arrLang[lang]['SuggestionBox']['Description']} <span  style={errormsgStyle}>*</span></label>
-                <textarea id="idSuggestion" className={"form-control"} name="Suggesstion" placeholder={arrLang[lang]['SuggestionBox']['TypeMessagehere']}></textarea>
-                <label id="lbl_suggestionerr" className={"form-label"} style={errormsgStyle}></label>
-            </div>
-            <div className={"col-lg-4  mb-2"}>
-                <label id="lblattach" className={"form-label"}>{arrLang[lang]['SuggestionBox']['Attachment']}</label>
-                <input type="file" multiple={true} className={"form-control"} id="file" onChange={this.addFile.bind(this)} />
-               
-            </div>
-          
-            <div className="col-lg-4">
-              
-              <button className={"red-btn shadow-sm  mr-3"} id="btnSubmit"   onClick={this.upload.bind(this)}>{arrLang[lang]['SuggestionBox']['Submit']}</button>
-              <button className={"red-btn shadow-sm  mr-3"} id="btnCancel"  onClick={(e) => {
-                          e.preventDefault();
-                          window.location.href=weburl;
-                          }}>{arrLang[lang]['SuggestionBox']['Cancel']}</button>
-            </div> 
+          </div>
+          <div className="container-fluid mt-5">
+          <div className="col-md-10 mx-auto col-12">
+              <div className="row">
+                <div className=" col-12 btnright">
+                      <button className="red-btn shadow-sm  ml-4"  id="btnSubmit"   onClick={this.upload.bind(this)}>{arrLang[lang]['SuggestionBox']['Submit']}</button>
+                      <button className="red-btn shadow-sm  ml-4"  id="btnCancel"  onClick={(e) => {
+                                    e.preventDefault();
+                                    window.location.href=weburl;
+                                    }}>{arrLang[lang]['SuggestionBox']['Cancel']}</button>
+                  </div>
+              </div>
+          </div>
         </div>
+      </section>
+    </div>
       
     );
     
@@ -161,8 +193,10 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
     let resultFile = event.target.files;
     console.log(resultFile);
     let fileInfos = [];
+    if(resultFile.length){
     for (var i = 0; i < resultFile.length; i++) {
       var fileName = resultFile[i].name;
+      $("#file_input").val(fileName);
       console.log(fileName);
       var file = resultFile[i];
       var reader = new FileReader();
@@ -176,6 +210,10 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
                 }
          })(file);
       reader.readAsArrayBuffer(file);
+    }
+    }
+    else{
+      $("#file_input").val("No file Selected");
     }
     this.setState({fileInfos});
     console.log(fileInfos)
