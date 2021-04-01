@@ -26,7 +26,7 @@ const displayStyle = {
 const sectiontop={
   marginTop: '-60px',
 }
-
+var Listname:string="Suggestions Box";
 const textareaStyle= {
   height: '140px',
   background: '#fff',
@@ -247,7 +247,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
 
       let {fileInfos}=this.state;
        if(lang=="en"){
-            sp.site.rootWeb.lists.getByTitle("SuggestionsBox").items.add({
+            sp.site.rootWeb.lists.getByTitle(Listname).items.add({
               Title:  sug_title,
               Description:sug_Desc,
               Suggestion_StatusId: 1,
@@ -255,16 +255,20 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
               User_JobTitle:this.userJobTilte,
               User_Department:this.userDepartment,
             }).then(r=>{
+              if(fileInfos!=null){
               r.item.attachmentFiles.addMultiple(fileInfos);
-              this.updateLogs(r.data.Id);
-            
+             
+              }
+               //this.updateLogs(r.data.Id);
+               alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
+               window.location.href=this.props.weburl;
             }).catch(function(err) {  
               console.log(err);  
           });
        }
        else if(lang=="ar")
        {
-            sp.site.rootWeb.lists.getByTitle("SuggestionsBox").items.add({
+            sp.site.rootWeb.lists.getByTitle(Listname).items.add({
               //Title_Ar: sug_title,
               Title:  sug_title,
               Description:sug_Desc,
@@ -274,9 +278,12 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
               User_JobTitle:this.userJobTilte,
               User_Department:this.userDepartment,
             }).then(r=>{
+              if(fileInfos!=null){
               r.item.attachmentFiles.addMultiple(fileInfos);
-              this.updateLogs(r.data.Id);
-          
+              }
+              //this.updateLogs(r.data.Id);
+               alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
+               window.location.href=this.props.weburl;
             }).catch(function(err) {  
               console.log(err);  
           });
