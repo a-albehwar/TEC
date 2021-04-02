@@ -27,6 +27,7 @@ const sectiontop={
   marginTop: '-60px',
 }
 var Listname:string="Suggestions Box";
+var LogsListName:string="WorkflowLogs";
 const textareaStyle= {
   height: '140px',
   background: '#fff',
@@ -259,9 +260,8 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
               r.item.attachmentFiles.addMultiple(fileInfos);
              
               }
-               //this.updateLogs(r.data.Id);
-               alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
-               window.location.href=this.props.weburl;
+               this.updateLogs(r.data.Id,r.data.AuthorId);
+               
             }).catch(function(err) {  
               console.log(err);  
           });
@@ -281,9 +281,8 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
               if(fileInfos!=null){
               r.item.attachmentFiles.addMultiple(fileInfos);
               }
-              //this.updateLogs(r.data.Id);
-               alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
-               window.location.href=this.props.weburl;
+              this.updateLogs(r.data.Id,r.data.AuthorId);
+              
             }).catch(function(err) {  
               console.log(err);  
           });
@@ -297,14 +296,19 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
     event.preventDefault();
     return false;
   }
-  private  updateLogs(ITEMID) {
-   sp.site.rootWeb.lists.getByTitle("SuggestionsBoxWorkflowLogs").items.add({
-      Title: ITEMID.toString(),
-      SuggestionIDId: ITEMID,
-      StatusId:1,
+  private  updateLogs(ITEMID,AuthorID) {
+   sp.site.rootWeb.lists.getByTitle(LogsListName).items.add({
+      Title: "SuggestionsBox",
+      Status: "Suggestion Initiated",
+      StatusID:1,
+      ItemID:ITEMID,
+      AssignedTo:"Innovation Team",
+      InitiatedById:AuthorID
     }).then(iar => {
+      alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
+      window.location.href=this.props.weburl;
       //console.log(iar);
-      this.CheckAndCreateFolder(ITEMID);
+      //this.CheckAndCreateFolder(ITEMID);
     }).catch((error:any) => {
       console.log("Error: ", error);
     });
