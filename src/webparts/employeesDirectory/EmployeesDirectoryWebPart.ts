@@ -17,7 +17,7 @@ export interface IEmployeesDirectoryWebPartProps {
   description: string;
 }
 declare var arrLang: any;
-declare var lang: any;
+//declare var lang: any;
 
 // interface ArrayConstructor {
 //   from(arrayLike: any, mapFn?, thisArg?): Array<any>;
@@ -136,7 +136,7 @@ export default class EmployeesDirectoryWebPart extends BaseClientSideWebPart<IEm
   // }
   private Localization(): void {
     var lcid=this.context.pageContext.legacyPageContext['currentCultureLCID'];  
-    var language=lcid==13313?"ar":"en";
+    var lang=lcid==13313?"ar":"en";
     $('#idBtnSearch').text(arrLang[lang]['EmployeeDirectory']['Search']);
     $('#idSearchName').attr("placeholder", arrLang[lang]['EmployeeDirectory']['EmployeeeName']);
     $('#lblDepartment').text(arrLang[lang]['EmployeeDirectory']['Department']);

@@ -20,7 +20,7 @@ export interface IEmployeeSuggestionsWebPartProps {
   description: string;
 }
 declare var arrLang: any;
-declare var lang: any;
+//declare var lang: any;
 // export interface ISPList {
 //   Title: string;
 //   Suggestion: string;
@@ -58,7 +58,7 @@ export default class EmployeeSuggestionsWebPart extends BaseClientSideWebPart<IE
  
   private Localization(): void {
     var lcid=this.context.pageContext.legacyPageContext['currentCultureLCID'];  
-    var language=lcid==13313?"ar":"en";
+    var lang=lcid==13313?"ar":"en";
     $('#btnSubmit').text(arrLang[lang]['EmployeeSuggestions']['Submit']);
     $('#idTitle').attr("placeholder", arrLang[lang]['EmployeeSuggestions']['Title']);
     $('#idSuggestion').attr("placeholder", arrLang[lang]['EmployeeSuggestions']['Suggestion']);
