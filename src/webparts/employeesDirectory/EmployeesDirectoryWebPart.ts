@@ -162,7 +162,7 @@ export default class EmployeesDirectoryWebPart extends BaseClientSideWebPart<IEm
 
     this.context.spHttpClient
       .get(
-        `${this.context.pageContext.web.absoluteUrl}/_api/search/query?querytext='((WorkEmail:*tecq8.com.kw)+AND+(PreferredName:`+encodeURIComponent(searchPreferredName)+`)+AND+(Department:`+encodeURIComponent(searchKeywordDepartment)+`))'&selectproperties='AccountName,Department,JobTitle,Path,PictureURL,PreferredName,FirstName,WorkEmail,WorkPhone,SPS-PhoneticDisplayName,OfficeNumber'&sourceid='B09A7990-05EA-4AF9-81EF-EDFAB16C4E31'&sortlist='firstname:ascending'&rowLimit=1000`,
+        `${this.context.pageContext.web.absoluteUrl}/_api/search/query?querytext='((WorkEmail:*tec.com.kw)+AND+(PreferredName:`+encodeURIComponent(searchPreferredName)+`)+AND+(Department:`+encodeURIComponent(searchKeywordDepartment)+`))'&selectproperties='AccountName,Department,JobTitle,Path,PictureURL,PreferredName,FirstName,WorkEmail,WorkPhone,SPS-PhoneticDisplayName,OfficeNumber'&sourceid='B09A7990-05EA-4AF9-81EF-EDFAB16C4E31'&sortlist='firstname:ascending'&rowLimit=1000`,
         SPHttpClient.configurations.v1
       )
       .then((response) => {
@@ -293,7 +293,7 @@ export default class EmployeesDirectoryWebPart extends BaseClientSideWebPart<IEm
               "&size=L";
           else
             userPictureUrl =
-              "https://tecq8.sharepoint.com/sites/IntranetDev/Style%20Library/TEC/images/user.jpg";
+              this.context.pageContext.site.absoluteUrl+"/SiteAssets/Images/DummyUserImage.jpg";
           //userPictureUrl = _spPageContextInfo.siteAbsoluteUrl + "/SiteAssets/PAS-Intranet/PASIntranet/HomePage/Outlook/UserDummyImage.jpg";
         }
         //
