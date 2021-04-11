@@ -120,7 +120,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
                       <label id="lbl_suggestionerr" className={"form-label"} style={errormsgStyle}></label>
                   </div>
                   
-                  <div className={"col-md-4 col-12 mb-4"}>
+                  {/* <div className={"col-md-4 col-12 mb-4"}>
                       <p>{arrLang[lang]['SuggestionBox']['Attachment']}</p>
                       <div className="input-group">
                         <input type="text" name="filename" className={"form-control"} placeholder={"No file selected"} id="file_input"/>
@@ -132,7 +132,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
                         </span>
                       </div>
                       
-                  </div>
+                  </div> */}
                 </div>
             </div>
           </div>
@@ -256,12 +256,13 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
               User_JobTitle:this.userJobTilte,
               User_Department:this.userDepartment,
             }).then(r=>{
-              if(fileInfos!=null){
-              r.item.attachmentFiles.addMultiple(fileInfos);
+              // if(fileInfos!=null){
+              // r.item.attachmentFiles.addMultiple(fileInfos);
              
-              }
-               this.updateLogs(r.data.Id,r.data.AuthorId);
-               
+              // }
+              //this.updateLogs(r.data.Id,r.data.AuthorId);
+              alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
+              window.location.href=this.props.weburl;
             }).catch(function(err) {  
               console.log(err);  
           });
@@ -278,11 +279,12 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
               User_JobTitle:this.userJobTilte,
               User_Department:this.userDepartment,
             }).then(r=>{
-              if(fileInfos!=null){
-              r.item.attachmentFiles.addMultiple(fileInfos);
-              }
-              this.updateLogs(r.data.Id,r.data.AuthorId);
-              
+              // if(fileInfos!=null){
+              // r.item.attachmentFiles.addMultiple(fileInfos);
+              // }
+             // this.updateLogs(r.data.Id,r.data.AuthorId);
+             alert( arrLang[lang]['SuggestionBox']['SuccessMsg']);
+             window.location.href=this.props.weburl;
             }).catch(function(err) {  
               console.log(err);  
           });
