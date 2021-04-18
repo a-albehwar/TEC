@@ -180,8 +180,8 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
               xhr.send();
           };
           
-          getJSON('https://apitec.azurewebsites.net/api/pushsms/Tourent/tour@321/'+msgsubject+'/'+msgdesc+'/'+mn+'/'+isChecked,  function(err, data) {
-              
+          getJSON('https://apitecq8.azurewebsites.net/api/pushsms/Tourent/tour@321/'+msgsubject+'/'+msgdesc+'/'+mn+'/'+isChecked,  function(err, data) {
+              //https://apitecq8.azurewebsites.net/api
               if (err != null) {
                   console.log(err);
                   //alert(err);
