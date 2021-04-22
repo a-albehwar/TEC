@@ -41,7 +41,7 @@ export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPos
     this.state ={    
       items:[],
       currentPage:1,
-      pageSize:2,
+      pageSize:10,
       totalcounts:2,
       totalPages:0,
     };  
@@ -126,9 +126,9 @@ export default class JobPostPag extends React.Component<IJobPostPagProps,IJobPos
                             <li><i className="fas fa-hourglass-end"></i> {arrLang[lang]['Jobs']['EndDate']}: {formatExpDate}</li>
                         </ul>
                       </div>
-                      <div className="div-right">
+                     {/*  <div className="div-right">
                         <a href={applnk} className="apply-button">{arrLang[lang]['Jobs']['ApplyNow']}</a>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
               ); 

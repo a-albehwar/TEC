@@ -362,7 +362,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
               // }
               //this.updateLogs(r.data.Id,r.data.AuthorId);
               alert("Thank you ! Your request was submitted Successfully");
-              window.location.href=this.props.weburl;
+              window.location.href=this.props.siteurl+"/Pages/TecPages/SearchSB.aspx";
             }).catch(function(err) {  
               console.log(err);  
           });
@@ -385,7 +385,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
               // }
              // this.updateLogs(r.data.Id,r.data.AuthorId);
              alert( "Thank you ! Your request was submitted Successfully");
-             window.location.href=this.props.weburl;
+             window.location.href=this.props.siteurl+"/Pages/TecPages/SearchSB.aspx";
             }).catch(function(err) {  
               console.log(err);  
           });
