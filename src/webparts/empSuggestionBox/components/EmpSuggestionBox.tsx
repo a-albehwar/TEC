@@ -104,8 +104,8 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
       <section className={"inner-page-cont"} style={sectiontop}>
 
       <div className={"container-fluid mt-5"}>
-          <div className={"col-md-10 mx-auto col-12"}>
-              <div className={"row user-info"}>
+          
+              <div className={"row user-info col-md-10 mx-auto col-12 pl-0 pr-0 m-0"}>
                   <h3 className={"mb-4 col-12"}>Employee Details</h3>
                   <div className="col-md-4 col-12 mb-4">
                         <p>Name<span  style={errormsgStyle}>*</span></p>
@@ -167,7 +167,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
                       
                   </div> */}
                 </div>
-            </div>
+            
           </div>
           <div className="container-fluid mt-5">
           <div className="col-md-10 mx-auto col-12">
