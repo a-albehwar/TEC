@@ -140,7 +140,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
                   </div>
                   <div id='div_other' className={"col-lg-4  mb-2"} style={displayStyle}>
                     <p id="lbl_Other">{arrLang[lang]['SuggestionBox']['Other']}<span  style={errormsgStyle}>*</span></p>                 
-                    <input type="text" id="txt_other" className={"form-input"} name="other" placeholder={arrLang[lang]['SuggestionBox']['Other']}/>
+                    <input type="text" id="txt_other" className={"form-input"} name="other" placeholder={"Other, please specify"}/>
                   </div>
                   <div className="col-md-12 col-12 mb-4">
                       <p>{arrLang[lang]['SuggestionBox']['Title']}<span  style={errormsgStyle}>*</span></p>
@@ -361,7 +361,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
              
               // }
               //this.updateLogs(r.data.Id,r.data.AuthorId);
-              alert("Thank you ! Your request was submitted Successfully");
+              alert("Thank you. The request was submitted successfully.");
               window.location.href=this.props.siteurl+"/Pages/TecPages/SearchSB.aspx";
             }).catch(function(err) {  
               console.log(err);  
@@ -384,7 +384,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
               // r.item.attachmentFiles.addMultiple(fileInfos);
               // }
              // this.updateLogs(r.data.Id,r.data.AuthorId);
-             alert( "Thank you ! Your request was submitted Successfully");
+             alert( "Thank you. The request was submitted successfully.");
              window.location.href=this.props.siteurl+"/Pages/TecPages/SearchSB.aspx";
             }).catch(function(err) {  
               console.log(err);  
@@ -392,7 +392,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
        }
     }
     else{
-      alert("Sorry,Please check your form where some data is not in a valid format.");
+      alert("Validation errors found.");
       event.preventDefault();
       return false;
     }  
