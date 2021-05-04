@@ -88,7 +88,7 @@ export default class PushSmsWebPart extends BaseClientSideWebPart<IPushSmsWebPar
    // $('#idSuggestion').attr('placeholder','Type Message here');
     $('#lblTitle').text(arrLang[lang]['PushSms']['MobileNumber']);
     $('#lblSuggestion').text(arrLang[lang]['PushSms']['Message']);
-    $('#italic_Multimob').html("<b>Note :</b>Enter mutliple mobile numbers with comma(,) & Mobile number format must be 96590065645");
+    $('#italic_Multimob').html("<b>Note :</b>Enter mutliple numbers separated by comma(,) & Mobile number format must be 96590065645");
    // $('#lblSubject').text(arrLang[lang]['PushSms']['Subject']);
 
    // $('#lbl_Language').text(arrLang[lang]['PushSms']['Lang']);

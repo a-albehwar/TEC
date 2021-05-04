@@ -85,11 +85,16 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
     .then(r=>{
       console.log(r);
       if(r.length>0){
-        $("#txtEmpName").val(r[0].Title!=null?r[0].Title:"");
-        $("#txtjobtitle").val(r[0].EmpDesignation!=null?r[0].EmpDesignation:"");
-        $("#txtDept").val(r[0].EmpDepartment!=null?r[0].EmpDepartment:"");
+        if(r[0].Title!=null){
+        $("#txtEmpName").val(r[0].Title).attr('readonly','true');
+        }
+        if(r[0].EmpDesignation!=null){
+          $("#txtjobtitle").val(r[0].EmpDesignation).attr('readonly','true');
+        }
+        if(r[0].EmpDepartment!=null){
+          $("#txtDept").val(r[0].EmpDepartment).attr('readonly','true');
+        }
       }
-
     }).catch(function(err) {  
       console.log(err);  
     });
