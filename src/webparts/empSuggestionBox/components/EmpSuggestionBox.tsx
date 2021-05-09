@@ -139,7 +139,7 @@ export default class EmpSuggestionBox extends React.Component<IEmpSuggestionBoxP
                           <input type="radio" id="rb_efficency" name="suggestionType" className={"form-control"} value="Improve Efficiency" onChange={this.handleradioClick} onBlur={this.checkboxval}></input>
                           <label id="lbl_Efficency" className={"form-label"}>{arrLang[lang]['SuggestionBox']['ImporveEfficiency']}</label>
                           <input type="radio" id="rb_other" name="suggestionType" className={"form-control"} value="Other" onChange={this.handleradioClick} onBlur={this.checkboxval}></input>
-                          <label id="lbl_Other" className={"form-label"}>{arrLang[lang]['SuggestionBox']['Other']}</label><br></br>              
+                          <label id="lbl_Other" className={"form-label"}>Other</label><br></br>              
                       </div>
                       <label id="lbl_SugTypeerr" className={"form-label"}  style={errormsgStyle}></label>
                   </div>
