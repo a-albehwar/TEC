@@ -67,7 +67,7 @@ export default class Media extends React.Component<IMediaProps, IMediaStates> {
       employeeList : [],
       currentPage:1,
       totalPages:0,
-      pageSize:2, // change no of items for page as your requirement
+      pageSize:10, // change no of items for page as your requirement
       itemCount:0,
     }    
     this.getListItemsCount(`${this.props.siteurl}/_api/web/lists/GetByTitle('Media')/ItemCount`);
@@ -83,7 +83,7 @@ export default class Media extends React.Component<IMediaProps, IMediaStates> {
     const p_ID = (pageNumber - 1)*this.state.pageSize;
     
    //?$select=ID,WorkType,ApplyLink,ExpireDate,Title,LK_Departments/ID,LK_Departments/Title&$expand=LK_Departments
-    const queryParam = `%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$top=${this.state.pageSize}&$orderby=Created desc`;
+    const queryParam = `%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$top=${this.state.pageSize}`;
     var url = `${this.props.siteurl}/_api/web/lists/GetByTitle('Media')/items?`+ queryParam;
     this.readItems(url);    
   }
@@ -121,12 +121,12 @@ export default class Media extends React.Component<IMediaProps, IMediaStates> {
         itemCount: response.value,
         totalPages: Math.ceil(response.value/this.state.pageSize)
       });
-    });
+    }).catch(console.log) 
     console.log(this.state.itemCount+"---"+this.state.totalPages);
   }
   private buildQueryParams(props: IMediaProps): string{
     const p_ID = (this.state.currentPage - 1)*this.state.pageSize;
-    const queryParam = `?%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$top=${this.state.pageSize}&$orderby=Created desc`;
+    const queryParam = `?%24skiptoken=Paged%3dTRUE%26p_ID=${p_ID}&$top=${this.state.pageSize}`;
     
     return queryParam;
   }
@@ -182,7 +182,16 @@ export default class Media extends React.Component<IMediaProps, IMediaStates> {
           var formatExpDate=momentObj.format('DD-MM-YYYY');
           var mediattitle=langcode=="en-US"?item.Title:item.Title_Ar;
           var Descstr = langcode=="en-US"?item.Description:item.Description_Ar;
-          var splitDesc = Descstr.substring(0, 200);
+          var splitDesc:string;
+          if(Descstr.length>200){
+            splitDesc = Descstr.substring(0, 200);
+            splitDesc = splitDesc+'...';
+          }
+          else{
+             splitDesc = Descstr;
+          }
+          
+
           var mediapubSource=langcode=="en-US"?item.PublishedSource:item.PublishedSource_Ar;
           var mediaurl=weburl+"/Pages/TecPages/Media/MediaDetails.aspx?mediaid="+item.ID;
            return (
