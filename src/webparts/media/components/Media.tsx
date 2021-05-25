@@ -73,6 +73,7 @@ export default class Media extends React.Component<IMediaProps, IMediaStates> {
     this.getListItemsCount(`${this.props.siteurl}/_api/web/lists/GetByTitle('Media')/ItemCount`);
     const queryParam = this.buildQueryParams(props);
     this.readItems(`${this.props.siteurl}/_api/web/lists/GetByTitle('Media')/items${queryParam}`);
+    
   }  
 
   private _onPageUpdate(pageNumber: number) {
@@ -157,11 +158,15 @@ export default class Media extends React.Component<IMediaProps, IMediaStates> {
         //status: `Showing items ${(this.state.currentPage - 1)*this.state.pageSize +1} - ${(this.state.currentPage -1) * this.state.pageSize + response.value.length} of ${this.state.itemCount}`
         
       });    
+      $(".pagination-button_first i").addClass('fas fa-angle-left').removeClass('icon-81');
+      $(".pagination-button_last i").addClass('fas fa-angle-right').removeClass('icon-81');
     }, (error: any): void => {
       this.setState({
         employeeList: [],
         //status: 'Loading all items failed with error: ' + error
       });
+      $(".pagination-button_first i").addClass('fas fa-angle-left').removeClass('icon-81');
+      $(".pagination-button_last i").addClass('fas fa-angle-right').removeClass('icon-81');
     });
   }
   public render(): React.ReactElement<IMediaProps> {
@@ -229,9 +234,9 @@ export default class Media extends React.Component<IMediaProps, IMediaStates> {
       </section>
       
     );
-  
+    
     
   }
-
+  
   
 }
