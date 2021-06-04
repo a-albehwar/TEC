@@ -6,23 +6,24 @@ import {
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { escape } from '@microsoft/sp-lodash-subset';
 import * as moment from 'moment';
-import styles from './MediaDetailsWebPart.module.scss';
-import * as strings from 'MediaDetailsWebPartStrings';
-import {Environment,EnvironmentType} from '@microsoft/sp-core-library' ;
+
+import styles from './PressReleaseDetailsWebPart.module.scss';
+import * as strings from 'PressReleaseDetailsWebPartStrings';
 import {  SPHttpClient ,SPHttpClientResponse } from '@microsoft/sp-http';   
 
-export interface IMediaDetailsWebPartProps {
+export interface IPressReleaseDetailsWebPartProps {
   description: string;
 }
 declare var arrLang: any;
 declare var lang: any;
 const url : any = new URL(window.location.href);
-const mediaid= url.searchParams.get("mediaid");
+const mediaid= url.searchParams.get("prid");
 
 export interface ISPLists 
 {
   value: ISPList[];
 }
+
 export interface ISPList 
 {
   Title: string;
@@ -37,11 +38,12 @@ export interface ISPList
   PageContentEn:string;
 }
 
-export default class MediaDetailsWebPart extends BaseClientSideWebPart<IMediaDetailsWebPartProps> {
+export default class PressReleaseDetailsWebPart extends BaseClientSideWebPart<IPressReleaseDetailsWebPartProps> {
   items: any;
   
-  private Listname: string = "Media";
+  private Listname: string = "PressReleases";
   
+
   private getMediaByID() {
     let html: string = '<div class="row gray-box"><div class="col-md-12">';
     
@@ -62,7 +64,7 @@ export default class MediaDetailsWebPart extends BaseClientSideWebPart<IMediaDet
                var mediaPubSrc=lang=="en"?item.PublishedSource: item.PublishedSource_Ar;
               html += `<h4>${mediatitle}</h4>
               <p class="detaildate"> ${formatpubDate}| <span class="detailsource">${mediaPubSrc}</span></p>
-              <div class="mt-2">${mediadesc }</div>
+              <p class="mt-2">${mediadesc }</p>
               `;
 
               }
@@ -73,8 +75,6 @@ export default class MediaDetailsWebPart extends BaseClientSideWebPart<IMediaDet
           });
       });
   }
-
-   
   public render(): void {
     this.domElement.innerHTML = `
     <section class="innerpagecont">
@@ -83,25 +83,20 @@ export default class MediaDetailsWebPart extends BaseClientSideWebPart<IMediaDet
         </div>
         <div class="container-fluid" id="mediaContainer">
         </div>
-      </section> 
+    </section>  
     `;
-    
-      this.Localization();
-      this.getMediaByID();
+    this.Localization();
+    this.getMediaByID();
   }
-
-  
   private Localization(): void {
     var lcid=this.context.pageContext.legacyPageContext['currentCultureLCID'];  
      lang=lcid==13313?"ar":"en";
   }
-  
-  /*
-  protected get dataVersion(): Version {
+
+  /*protected get dataVersion(): Version {
     return Version.parse('1.0');
   }
   */
-  
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
     return {
       pages: [

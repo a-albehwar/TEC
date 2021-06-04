@@ -177,6 +177,14 @@
           "manifest": "./src/webparts/viewSuggestion/ViewSuggestionWebPart.manifest.json"
         }
       ]
+    },
+    "press-release-details-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/pressReleaseDetails/PressReleaseDetailsWebPart.js",
+          "manifest": "./src/webparts/pressReleaseDetails/PressReleaseDetailsWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {
@@ -210,6 +218,7 @@
     "SuggestionBoxWebPartStrings": "lib/webparts/suggestionBox/loc/{locale}.js",
     "EmpSuggestionBoxWebPartStrings": "lib/webparts/empSuggestionBox/loc/{locale}.js",
     "SuggestionsGridWebPartStrings": "lib/webparts/suggestionsGrid/loc/{locale}.js",
-    "ViewSuggestionWebPartStrings": "lib/webparts/viewSuggestion/loc/{locale}.js"
+    "ViewSuggestionWebPartStrings": "lib/webparts/viewSuggestion/loc/{locale}.js",
+    "PressReleaseDetailsWebPartStrings": "lib/webparts/pressReleaseDetails/loc/{locale}.js"
   }
 }
