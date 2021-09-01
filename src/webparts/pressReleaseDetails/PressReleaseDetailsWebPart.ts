@@ -7,7 +7,7 @@ import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { escape } from '@microsoft/sp-lodash-subset';
 import * as moment from 'moment';
 
-import styles from './PressReleaseDetailsWebPart.module.scss';
+//import styles from './PressReleaseDetailsWebPart.module.scss';
 import * as strings from 'PressReleaseDetailsWebPartStrings';
 import {  SPHttpClient ,SPHttpClientResponse } from '@microsoft/sp-http';   
 
@@ -47,7 +47,7 @@ export default class PressReleaseDetailsWebPart extends BaseClientSideWebPart<IP
   private getMediaByID() {
     let html: string = '<div class="row gray-box"><div class="col-md-12">';
     
-    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items`, SPHttpClient.configurations.v1)
+    this.context.spHttpClient.get(`${this.context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items`, SPHttpClient.configurations.v1)
       .then(response => {
         return response.json()
           .then((items: any): void => {
