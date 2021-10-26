@@ -45,7 +45,7 @@ export default class MediaDetailsWebPart extends BaseClientSideWebPart<IMediaDet
   private getMediaByID() {
     let html: string = '<div class="row gray-box"><div class="col-md-12">';
     
-    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items`, SPHttpClient.configurations.v1)
+    this.context.spHttpClient.get(`${this.context.pageContext.site.absoluteUrl}/_api/web/lists/getbytitle('${this.Listname}')/items?$top=5000`, SPHttpClient.configurations.v1)
       .then(response => {
         return response.json()
           .then((items: any): void => {
