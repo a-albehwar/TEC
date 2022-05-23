@@ -185,6 +185,22 @@
           "manifest": "./src/webparts/pressReleaseDetails/PressReleaseDetailsWebPart.manifest.json"
         }
       ]
+    },
+    "competition-popup-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/competitionPopup/CompetitionPopupWebPart.js",
+          "manifest": "./src/webparts/competitionPopup/CompetitionPopupWebPart.manifest.json"
+        }
+      ]
+    },
+    "compaign-popup-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/compaignPopup/CompaignPopupWebPart.js",
+          "manifest": "./src/webparts/compaignPopup/CompaignPopupWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {
@@ -219,6 +235,8 @@
     "EmpSuggestionBoxWebPartStrings": "lib/webparts/empSuggestionBox/loc/{locale}.js",
     "SuggestionsGridWebPartStrings": "lib/webparts/suggestionsGrid/loc/{locale}.js",
     "ViewSuggestionWebPartStrings": "lib/webparts/viewSuggestion/loc/{locale}.js",
-    "PressReleaseDetailsWebPartStrings": "lib/webparts/pressReleaseDetails/loc/{locale}.js"
+    "PressReleaseDetailsWebPartStrings": "lib/webparts/pressReleaseDetails/loc/{locale}.js",
+    "CompetitionPopupWebPartStrings": "lib/webparts/competitionPopup/loc/{locale}.js",
+    "CompaignPopupWebPartStrings": "lib/webparts/compaignPopup/loc/{locale}.js"
   }
 }
