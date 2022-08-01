@@ -13,7 +13,13 @@
       "privacyUrl": "",
       "termsOfUseUrl": "",
       "mpnId": ""
-    }
+    },
+    "webApiPermissionRequests": [  
+      {  
+        "resource": "Microsoft Graph",  
+        "scope": "Calendars.Read"  
+      }  
+    ]  
   },
   "paths": {
     "zippedPackage": "solution/tec.sppkg"

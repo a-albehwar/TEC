@@ -7,35 +7,30 @@ import {
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
-import * as strings from 'CompaignPopupWebPartStrings';
-import CompaignPopup from './components/CompaignPopup';
-import { ICompaignPopupProps } from './components/ICompaignPopupProps';
+import * as strings from 'OutlookEventsWebPartStrings';
+import OutlookEvents from './components/OutlookEvents';
+import { IOutlookEventsProps } from './components/IOutlookEventsProps';
+import calendarService, { CalendarService } from './components/CalendarService';
 import { sp } from '@pnp/sp';
-
-export interface ICompaignPopupWebPartProps {
+export interface IOutlookEventsWebPartProps {
   description: string;
 }
 
-export default class CompaignPopupWebPart extends BaseClientSideWebPart<ICompaignPopupWebPartProps> {
-  protected onInit(): Promise<void> {
-    //<summary> On Init Method to intialize the pnp sp js object</summary>
-        sp.setup({
-        spfxContext: this.context
-        });
-        
-        return super.onInit();
-  }
-  public render(): void {
-   // debugger;
-    const element: React.ReactElement<ICompaignPopupProps> = React.createElement(
+export default class OutlookEventsWebPart extends BaseClientSideWebPart<IOutlookEventsWebPartProps> {
+  protected onInit(): Promise<void> {  
+    sp.setup({
+      spfxContext: this.context
+      });
       
-      CompaignPopup,
+    return super.onInit().then(() => {  
+      calendarService.setup(this.context);  
+    });  
+  }  
+  public render(): void {
+    const element: React.ReactElement<IOutlookEventsProps> = React.createElement(
+      OutlookEvents,
       {
-       // description: this.properties.description
-       listName: "Campaign_ItemsList",
-        spHttpClient: this.context.spHttpClient,
-        siteUrl: this.context.pageContext.site.absoluteUrl,
-        context:this.context
+        description: this.properties.description
       }
     );
 
@@ -46,9 +41,9 @@ export default class CompaignPopupWebPart extends BaseClientSideWebPart<ICompaig
     ReactDom.unmountComponentAtNode(this.domElement);
   }
 
-  protected get dataVersion(): Version {
-    return Version.parse('1.0');
-  }
+  // protected get dataVersion(): Version {
+  //   return Version.parse('1.0');
+  // }
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
     return {

@@ -201,6 +201,14 @@
           "manifest": "./src/webparts/compaignPopup/CompaignPopupWebPart.manifest.json"
         }
       ]
+    },
+    "outlook-events-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/outlookEvents/OutlookEventsWebPart.js",
+          "manifest": "./src/webparts/outlookEvents/OutlookEventsWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {
@@ -209,7 +217,7 @@
     "myPagination": {
       "path": "./src/JS/pagination.js",
       "globalName": "MyPagination"
-    }
+    }   
   },
   "localizedResources": {
     "KeyAcheivementsWebPartStrings": "lib/webparts/keyAcheivements/loc/{locale}.js",
@@ -237,6 +245,7 @@
     "ViewSuggestionWebPartStrings": "lib/webparts/viewSuggestion/loc/{locale}.js",
     "PressReleaseDetailsWebPartStrings": "lib/webparts/pressReleaseDetails/loc/{locale}.js",
     "CompetitionPopupWebPartStrings": "lib/webparts/competitionPopup/loc/{locale}.js",
-    "CompaignPopupWebPartStrings": "lib/webparts/compaignPopup/loc/{locale}.js"
+    "CompaignPopupWebPartStrings": "lib/webparts/compaignPopup/loc/{locale}.js",
+    "OutlookEventsWebPartStrings": "lib/webparts/outlookEvents/loc/{locale}.js"
   }
 }

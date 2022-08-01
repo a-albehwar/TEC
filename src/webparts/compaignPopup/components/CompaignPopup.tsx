@@ -103,7 +103,8 @@ export default class CompaignPopup extends React.Component<ICompaignPopupProps, 
     if (listItems.length > 0) {
 
       listItems.forEach((li) => {
-        strAns += li.Answer;
+        if (li.Answer)
+          strAns += li.Answer;
       });
       console.log(strAns);
 
@@ -446,7 +447,7 @@ export default class CompaignPopup extends React.Component<ICompaignPopupProps, 
           // style={customStyles}
           ariaHideApp={false} className="modal" >
 
-          <div className="modal-dialog yamp" role="document">
+          <div className="modal-dialog yamp dia" role="document">
             <div className="modal-content">
               <div className="modal-header">
                 <button type="button" className="close" data-dismiss="modal" aria-label="Close"
